@@ -14,7 +14,8 @@ import (
 // Body represents the JSON structure of the request body for the API endpoint.
 type Body struct {
 	// Name is the name of the job to be executed.
-	Name string `json:"name"`
+	Name string   `json:"name"`
+	Args []string `json:"args"`
 }
 
 // main initializes the application, reads the configuration, and starts the HTTP server.
@@ -50,9 +51,17 @@ func main() {
 		}
 		if found {
 
+			// Start building the command slice
+			cmdArgs := []string{"-c", filepath.Join(config.AppPath, body.Name)}
+
+			// Check if args is present and not empty
+			if len(body.Args) > 0 {
+				// Append each argument to the command slice
+				cmdArgs = append(cmdArgs, body.Args...)
+			}
+
 			// Execute the command
-			fmt.Println(filepath.Join(config.AppPath, body.Name))
-			cmd := exec.Command("sh", "-c", filepath.Join(config.AppPath, body.Name))
+			cmd := exec.Command("sh", cmdArgs...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error executing command: %s", err)})
