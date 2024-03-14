@@ -20,5 +20,8 @@
 # Go workspace file
 go.work
 config.json
+all.json
 build/
 .DS_Store
+*.json
+data/
