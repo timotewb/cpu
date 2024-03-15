@@ -22,17 +22,17 @@ type Body struct {
 // It listens for POST requests on "/api" and executes a job if the job name is found in the configuration.
 func main() {
 
-	// Read config file
-	config, err := app.ReadConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	router := gin.Default()
 
 	// POST /api handler for executing jobs.
 	// It reads the job name from the request body, checks if it's in the configuration's job list, and executes the job if found.
 	router.POST("/api", func(c *gin.Context) {
+
+		// Read config file each time api is called
+		config, err := app.ReadConfig()
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		// Read the contact from the request body
 		var body Body
