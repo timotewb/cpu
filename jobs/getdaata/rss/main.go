@@ -46,21 +46,21 @@ func main() {
 	// Read All Config
 	allConfig, err := app.ReadAllConfig(configDir)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("function ReadAllConfig() failed: %v", err)
 		return
 	}
 
 	// Read Job Config
 	jobConfig, err := app.ReadJobConfig(configDir)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("function ReadJobConfig() failed: %v", err)
 		return
 	}
 
 	// get sqlite db
 	db, err := app.GetOrCreateSQLiteDB(allConfig, "rss")
 	if err != nil {
-		log.Fatalf("GetOrCreateSQLiteDB(): %v", err)
+		log.Fatalf("function GetOrCreateSQLiteDB() failed: %v", err)
 	}
 	defer db.Close()
 
@@ -165,7 +165,7 @@ func main() {
 		// remvoe duplicates from table
 		_, err = db.Exec(`DELETE FROM rss WHERE id NOT IN (SELECT MIN(id) FROM rss GROUP BY link)`)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal("failed to remove duplicates from rss table: ", err)
 			return
 		}
 
