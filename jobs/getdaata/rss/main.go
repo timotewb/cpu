@@ -163,11 +163,11 @@ func main() {
 		}
 
 		// remvoe duplicates from table
-		// _, err = db.Exec(`DELETE FROM rss WHERE id NOT IN (SELECT MIN(id) FROM rss GROUP BY link)`)
-		// if err != nil {
-		// 	fmt.Println(err)
-		// 	return
-		// }
+		_, err = db.Exec(`DELETE FROM rss WHERE id NOT IN (SELECT MIN(id) FROM rss GROUP BY link)`)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
 	}
 }
