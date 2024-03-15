@@ -27,7 +27,7 @@ type URLType struct {
 
 // ReadAllConfig reads and returns the application configuration from a JSON file.
 // It returns an error if the file cannot be opened or if the JSON cannot be unmarshalled.
-func ReadAllConfig() (AllConfig, error) {
+func ReadAllConfig(configDir string) (AllConfig, error) {
 	var config AllConfig
 	// executablePath, err := os.Executable()
 	// if err != nil {
@@ -37,7 +37,7 @@ func ReadAllConfig() (AllConfig, error) {
 	// executableDir := filepath.Dir(executablePath)
 	// // Construct the path to the config.json file in the same directory
 	// configPath := filepath.Join(executableDir, "all.json")
-	configPath := filepath.Join("all.json")
+	configPath := filepath.Join(filepath.Join(configDir, "all.json"))
 
 	// Open the configuration file
 	file, err := os.Open(configPath)
@@ -61,7 +61,7 @@ func ReadAllConfig() (AllConfig, error) {
 
 // ReadJobConfig reads and returns the application configuration from a JSON file.
 // It returns an error if the file cannot be opened or if the JSON cannot be unmarshalled.
-func ReadJobConfig() (JobConfig, error) {
+func ReadJobConfig(configDir string) (JobConfig, error) {
 	var config JobConfig
 	// executablePath, err := os.Executable()
 	// if err != nil {
@@ -71,7 +71,7 @@ func ReadJobConfig() (JobConfig, error) {
 	// executableDir := filepath.Dir(executablePath)
 	// // Construct the path to the config.json file in the same directory
 	// configPath := filepath.Join(executableDir, "rss.json")
-	configPath := filepath.Join("rss.json")
+	configPath := filepath.Join(filepath.Join(configDir, "rss.json"))
 	// Open the configuration file
 	file, err := os.Open(configPath)
 	if err != nil {
