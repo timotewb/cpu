@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -22,6 +24,31 @@ type Body struct {
 // It listens for POST requests on "/api" and executes a job if the job name is found in the configuration.
 func main() {
 
+	var configDir string
+	var help bool
+	// Define CLI flags in shrot and long form
+	flag.StringVar(&configDir, "c", "", "Path where configuration file is stored (shorthand)")
+	flag.StringVar(&configDir, "config", "", "Path where configuration file is stored")
+	flag.BoolVar(&help, "h", false, "Show usage instructions (shorthand)")
+	flag.BoolVar(&help, "help", false, "Show usage instructions")
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------------------------")
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n\n", os.Args[0])
+		fmt.Fprintln(os.Stderr, "Pass -c to specify where the configuration file is stored:")
+		fmt.Fprintln(os.Stderr, "  -c\t\tstring\n  --config")
+		fmt.Fprintln(os.Stderr, "  \tPath where configuration file is stored")
+		fmt.Fprintln(os.Stderr, "\n  -h\t\tboolean\n  --help")
+		fmt.Fprintln(os.Stderr, "  \tShow usage instructions")
+		fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------------------------")
+	}
+	flag.Parse()
+
+	// Print the Help docuemntation to the terminal if user passes help flag
+	if help {
+		flag.Usage()
+		return
+	}
+
 	router := gin.Default()
 
 	// POST /api handler for executing jobs.
@@ -29,7 +56,7 @@ func main() {
 	router.POST("/api", func(c *gin.Context) {
 
 		// Read config file each time api is called
-		config, err := app.ReadConfig()
+		config, err := app.ReadConfig(configDir)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // Config holds the application configuration.
@@ -16,10 +17,10 @@ type Config struct {
 
 // ReadConfig reads and returns the application configuration from a JSON file.
 // It returns an error if the file cannot be opened or if the JSON cannot be unmarshalled.
-func ReadConfig() (Config, error) {
+func ReadConfig(configDir string) (Config, error) {
 	var config Config
 	// Open the configuration file
-	file, err := os.Open("config.json")
+	file, err := os.Open(filepath.Join(configDir, "config.json"))
 	if err != nil {
 		return config, err
 	}
