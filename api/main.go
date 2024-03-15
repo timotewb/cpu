@@ -26,7 +26,7 @@ func main() {
 
 	var configDir string
 	var help bool
-	// Define CLI flags in shrot and long form
+	// Define CLI flags in short and long form
 	flag.StringVar(&configDir, "c", "", "Path where configuration file is stored (shorthand)")
 	flag.StringVar(&configDir, "config", "", "Path where configuration file is stored")
 	flag.BoolVar(&help, "h", false, "Show usage instructions (shorthand)")
@@ -79,7 +79,7 @@ func main() {
 		if found {
 
 			// Start building the command slice
-			cmdArgs := []string{"-c", filepath.Join(config.AppPath, body.Name)}
+			cmdArgs := []string{filepath.Join(config.AppPath, body.Name)}
 
 			// Check if args is present and not empty
 			if len(body.Args) > 0 {
@@ -88,7 +88,7 @@ func main() {
 			}
 
 			// Execute the command
-			cmd := exec.Command("sh", cmdArgs...)
+			cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error executing command: %s", err)})
