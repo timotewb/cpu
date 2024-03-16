@@ -1,14 +1,22 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/timotewb/cpu/jobs/getdata/common"
 	"github.com/timotewb/cpu/jobs/getdata/openweathermap-mgr/app"
 )
+
+type BodyType struct {
+	Name string
+	Lat  float64
+	Lon  float64
+}
 
 func main() {
 	var configDir string
@@ -37,7 +45,7 @@ func main() {
 	}
 
 	// Read All Config
-	allConfig, err := common.ReadAllConfig(configDir)
+	allConfig, err := app.ReadAllConfig(configDir)
 	if err != nil {
 		log.Fatalf("function ReadAllConfig() failed: %v", err)
 		return
@@ -51,5 +59,41 @@ func main() {
 	}
 
 	fmt.Println(allConfig)
-	fmt.Println(cityList)
+
+	var body BodyType
+	for i := 0; i < len(cityList); i++ {
+		fmt.Println(cityList[i].Coord.Lat)
+		body.Name = "openweathermap"
+		body.Lat = cityList[i].Coord.Lat
+		body.Lon = cityList[i].Coord.Lon
+
+		// Prepare the JSON body
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			log.Fatalf("Error marshalling body to JSON: %v", err)
+		}
+
+		// Create a new HTTP request
+		req, err := http.NewRequest("POST", allConfig.APIHost, bytes.NewBuffer(jsonBody))
+		if err != nil {
+			log.Fatalf("Error creating new HTTP request: %v", err)
+		}
+
+		// Set the Content-Type header to application/json
+		req.Header.Set("Content-Type", "application/json")
+
+		// Send the request
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatalf("Error sending POST request: %v", err)
+		}
+		defer resp.Body.Close()
+
+		// Check the response status
+		if resp.StatusCode != http.StatusOK {
+			log.Fatalf("Received non-200 response: %s", resp.Status)
+		}
+
+	}
 }
