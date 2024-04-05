@@ -29,7 +29,6 @@ func main() {
 	flag.Parse()
 
 	out, _ := exec.Command("ping", ipAddr, "-c 5", "-i 3").Output()
-	fmt.Println(string(out))
 	if strings.Contains(string(out), "Destination Host Unreachable") || strings.Contains(string(out), "No route to host") || strings.Contains(string(out), "Request timeout for icmp_seq") {
 		fmt.Println("{'result':false}")
 	} else {
