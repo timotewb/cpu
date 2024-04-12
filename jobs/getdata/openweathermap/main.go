@@ -29,7 +29,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "  -c\t\tstring\n  --config")
 		fmt.Fprintln(os.Stderr, "  \tPath where configuration files are stored")
 		fmt.Fprintln(os.Stderr, "\n  -i\t\t int")
-		fmt.Fprintln(os.Stderr, "  \tComma seperated list of Openweathermap City IDsD")
+		fmt.Fprintln(os.Stderr, "  \tComma seperated list of Openweathermap City IDs")
 		fmt.Fprintln(os.Stderr, "\n  -h\n  --help")
 		fmt.Fprintln(os.Stderr, "  \tShow usage instructions")
 		fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------------------------")

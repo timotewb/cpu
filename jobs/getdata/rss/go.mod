@@ -1,4 +1,4 @@
-module github.com/timotewb/cpu/jobs/data/rss
+module github.com/timotewb/cpu/jobs/getdata/rss
 
 go 1.21.4
 

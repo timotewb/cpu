@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/timotewb/cpu/jobs/data/rss/app"
+	"github.com/timotewb/cpu/jobs/getdata/rss/app"
 )
 
 // var getURL string = "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
