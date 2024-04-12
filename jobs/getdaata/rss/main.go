@@ -77,6 +77,9 @@ func main() {
 		log.Fatalf("failed to create table: %v", err)
 	}
 
+	//----------------------------------------------------------------------------------------
+	// loop over each url
+	//----------------------------------------------------------------------------------------
 	for i := 0; i < len(jobConfig.URLs); i++ {
 
 		if xmlBytes, err := app.GetXML(jobConfig.URLs[i].URL); err != nil {
@@ -85,6 +88,7 @@ func main() {
 			// remove any difficult strings
 			xmlBytes = []byte(strings.ReplaceAll(string(xmlBytes), "atom:link", "atomlink"))
 
+			// choose model
 			var result interface{}
 			if jobConfig.URLs[i].Format == 1 {
 				result = &app.RssChannelFormat{}
@@ -138,6 +142,15 @@ func main() {
 					}
 					// Create a regular expression to match HTML tags
 					re := regexp.MustCompile(`(?s)<[^>]*>`)
+
+					// Choose the date, leave blank if not found
+					if s.PubDate == "" {
+						if s.PublishedDate != "" {
+							s.PubDate = s.PublishedDate
+						} else if s.UpdateDate != "" {
+							s.PubDate = s.UpdateDate
+						}
+					}
 
 					// Replace all HTML tags in desc with an empty string
 					desc = re.ReplaceAllString(desc, "")

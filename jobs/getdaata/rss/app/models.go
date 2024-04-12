@@ -3,7 +3,9 @@ package app
 import "encoding/xml"
 
 // input struct(s)
+// ----------------------------------------------------------------------------------------
 // format = 1
+// ----------------------------------------------------------------------------------------
 type RssChannelFormat struct {
 	XMLName xml.Name `xml:"rss"`
 	Rss     Channel  `xml:"channel"`
@@ -21,7 +23,9 @@ type Item struct {
 	PubDate     string `xml:"pubDate"`
 }
 
+// ----------------------------------------------------------------------------------------
 // format = 2
+// ----------------------------------------------------------------------------------------
 type FeedFormat struct {
 	Feed xml.Name   `xml:"feed"`
 	Rss  []FeedItem `xml:"entry"`
@@ -29,12 +33,14 @@ type FeedFormat struct {
 
 type FeedItem struct {
 	// XMLName     xml.Name     `xml:"item"`
-	Title       string     `xml:"title"`
-	Link        string     `xml:"id"`
-	Description string     `xml:"summary"`
-	Content     string     `xml:"content"`
-	Creator     FeedAuthor `xml:"author"`
-	PubDate     string     `xml:"published"`
+	Title         string     `xml:"title"`
+	Link          string     `xml:"id"`
+	Description   string     `xml:"summary"`
+	Content       string     `xml:"content"`
+	Creator       FeedAuthor `xml:"author"`
+	PubDate       string     `xml:"pubDate"`
+	PublishedDate string     `xml:"published"`
+	UpdateDate    string     `xml:"updated"`
 }
 type FeedAuthor struct {
 	Name []string `xml:"name"`
