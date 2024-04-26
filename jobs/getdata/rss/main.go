@@ -115,6 +115,14 @@ func main() {
 					// Create a regular expression to match HTML tags
 					re := regexp.MustCompile(`(?s)<[^>]*>`)
 
+					// tidy pubDate
+					d, err := app.ParseDate(s.PubDate)
+					if err != nil {
+						log.Fatal("failed to insert data from rss channel data: ", err)
+					} else {
+						s.PubDate = d
+					}
+
 					// Replace all HTML tags in desc with an empty string
 					desc = re.ReplaceAllString(desc, "")
 					if deBug {
@@ -150,6 +158,14 @@ func main() {
 						} else if s.UpdateDate != "" {
 							s.PubDate = s.UpdateDate
 						}
+					}
+
+					// tidy pubDate
+					d, err := app.ParseDate(s.PubDate)
+					if err != nil {
+						log.Fatal("failed to insert data from rss channel data: ", err)
+					} else {
+						s.PubDate = d
 					}
 
 					// Replace all HTML tags in desc with an empty string

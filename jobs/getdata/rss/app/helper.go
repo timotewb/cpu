@@ -33,7 +33,7 @@ func GetXML(url string) ([]byte, error) {
 
 func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, error) {
 
-	err := os.MkdirAll(conf.StagingPath, 0777) // 0755 is the permission for the directory
+	err := os.MkdirAll(conf.StagingPath, 0777)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create staging dir: %v", err)
 	}
@@ -96,6 +96,13 @@ func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, error) {
 			return nil, fmt.Errorf("unable to open new db: %v", err)
 		}
 		db.SetMaxOpenConns(1)
+
+		// Set permissions to 777 for the newly created .db file
+		err = os.Chmod(dbPath, 0777)
+		if err != nil {
+			return nil, fmt.Errorf("failed to set permissions on new db file: %v", err)
+		}
+
 		return db, nil
 	} else {
 		db, err := sql.Open("sqlite3", mostRecentDBPath)
@@ -112,7 +119,7 @@ func MoveFile(srcFilePath, destDirPath string) error {
 	_, err := os.Stat(destDirPath)
 	if os.IsNotExist(err) {
 		// Create the destination directory
-		err = os.MkdirAll(destDirPath, 0755) // 0755 is the permission for the directory
+		err = os.MkdirAll(destDirPath, 0777)
 		if err != nil {
 			return fmt.Errorf("failed to create directory: %v", err)
 		}
@@ -127,5 +134,40 @@ func MoveFile(srcFilePath, destDirPath string) error {
 		return fmt.Errorf("failed to move file: %v", err)
 	}
 
+	// Set permissions to 777 for the moved file
+	err = os.Chmod(destFilePath, 0777)
+	if err != nil {
+		return fmt.Errorf("failed to set permissions on moved file: %v", err)
+	}
+
 	return nil
+}
+
+func ParseDate(dateStr string) (string, error) {
+	// Define the expected input formats
+	formats := []string{
+		"2006-01-02T15:04:05Z",            // ISO 8601 format
+		"Mon, 02 Jan 2006 15:04:05 -0700", // RFC 1123 format
+		// Add more formats as needed
+	}
+
+	var parsedTime time.Time
+	var err error
+
+	// Try parsing the date string with each format
+	for _, format := range formats {
+		parsedTime, err = time.Parse(format, dateStr)
+		if err == nil {
+			break // Successfully parsed, break the loop
+		}
+	}
+
+	if err != nil {
+		// None of the formats matched
+		return "", fmt.Errorf("failed to parse date: %v", err)
+	}
+
+	// Format the parsed time into a consistent output format, including timezone
+	consistentFormat := "2006-01-02 15:04:05 -0700"
+	return parsedTime.Format(consistentFormat), nil
 }
