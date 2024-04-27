@@ -31,17 +31,17 @@ func GetXML(url string) ([]byte, error) {
 	return data, nil
 }
 
-func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, error) {
+func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, string, error) {
 
 	err := os.MkdirAll(conf.StagingPath, 0777)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create staging dir: %v", err)
+		return nil, "", fmt.Errorf("unable to create staging dir: %v", err)
 	}
 
 	// Check if the SQLite database file exists and its size
 	files, err := os.ReadDir(conf.StagingPath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read staging dir: %v", err)
+		return nil, "", fmt.Errorf("unable to read staging dir: %v", err)
 	}
 
 	var mostRecentDBPath string
@@ -55,7 +55,7 @@ func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, error) {
 		// Assuming dbPath is a string containing the path to your file
 		fileInfo, err := os.Stat(dbPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get file info: %v", err)
+			return nil, "", fmt.Errorf("failed to get file info: %v", err)
 		}
 
 		// Get the size of the file in bytes
@@ -70,7 +70,7 @@ func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, error) {
 				timestampStr := file.Name()[4:18] // Assuming the format is "rss_YYYYMMDDHHMMSS.db"
 				timestamp, err := time.Parse("20060102150405", timestampStr)
 				if err != nil {
-					return nil, fmt.Errorf("failed to parse timestamp: %v", err)
+					return nil, "", fmt.Errorf("failed to parse timestamp: %v", err)
 				}
 
 				if timestamp.After(mostRecentTime) {
@@ -81,7 +81,7 @@ func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, error) {
 				// move db file to loading dir
 				err = MoveFile(dbPath, conf.LoadingPath)
 				if err != nil {
-					return nil, fmt.Errorf("failed to move db file to loading dir: %v", err)
+					return nil, "", fmt.Errorf("failed to move db file to loading dir: %v", err)
 				}
 			}
 		}
@@ -93,24 +93,18 @@ func GetOrCreateSQLiteDB(conf AllConfig, jobName string) (*sql.DB, error) {
 		dbPath := filepath.Join(conf.StagingPath, newDBName)
 		db, err := sql.Open("sqlite3", dbPath)
 		if err != nil {
-			return nil, fmt.Errorf("unable to open new db: %v", err)
+			return nil, "", fmt.Errorf("unable to open new db: %v", err)
 		}
 		db.SetMaxOpenConns(1)
 
-		// Set permissions to 777 for the newly created .db file
-		err = os.Chmod(dbPath, 0777)
-		if err != nil {
-			return nil, fmt.Errorf("failed to set permissions on new db file: %v", err)
-		}
-
-		return db, nil
+		return db, dbPath, nil
 	} else {
 		db, err := sql.Open("sqlite3", mostRecentDBPath)
 		if err != nil {
-			return nil, fmt.Errorf("unable to open existing db: %v", err)
+			return nil, "", fmt.Errorf("unable to open existing db: %v", err)
 		}
 		db.SetMaxOpenConns(1)
-		return db, nil
+		return db, mostRecentDBPath, nil
 	}
 }
 

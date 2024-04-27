@@ -58,7 +58,7 @@ func main() {
 	}
 
 	// get sqlite db
-	db, err := app.GetOrCreateSQLiteDB(allConfig, "rss")
+	db, dbPath, err := app.GetOrCreateSQLiteDB(allConfig, "rss")
 	if err != nil {
 		log.Fatalf("function GetOrCreateSQLiteDB() failed: %v", err)
 	}
@@ -197,6 +197,12 @@ func main() {
 			log.Fatal("failed to remove duplicates from rss table: ", err)
 			return
 		}
+	}
 
+	// Set permissions to 777 for the newly created .db file
+	err = os.Chmod(dbPath, 0777)
+	if err != nil {
+		log.Fatal("failed to set permissions on db file: ", err)
+		return
 	}
 }
