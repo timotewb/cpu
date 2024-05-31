@@ -1,7 +1,13 @@
 package app
 
-import "fmt"
+import (
+	"fmt"
 
-func Cameras() {
+	"github.com/timotewb/cpu/jobs/getdata/common/config"
+)
+
+func Cameras(allConfig config.AllConfig) {
 	fmt.Println("cameras")
+	fmt.Println(allConfig)
+
 }
