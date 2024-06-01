@@ -66,7 +66,7 @@ func GetOrCreateSQLiteDB(conf config.AllConfig, jobName string) (*sql.DB, string
 		// Convert the size to megabytes
 		sizeInMegabytes := int(sizeInBytes) / (1024 * 1024)
 
-		if filepath.Ext(file.Name()) == ".db" && filepath.Base(file.Name())[:3] == jobName {
+		if filepath.Ext(file.Name()) == ".db" && filepath.Base(file.Name())[:len(jobName)] == jobName {
 
 			if sizeInMegabytes < conf.SQLiteMaxSizeMB {
 				underscorePos := strings.LastIndex(file.Name(), "_")

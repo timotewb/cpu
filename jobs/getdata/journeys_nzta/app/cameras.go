@@ -77,5 +77,11 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 				log.Printf("Failed to execute statement: %s\n", err.Error())
 			}
 		}
+		// remvoe duplicates from table
+		_, err = db.Exec(`DELETE FROM cameras WHERE id NOT IN (SELECT MIN(id) FROM cameras GROUP BY CONCAT(last_edited, created, uniq))`)
+		if err != nil {
+			log.Fatal("failed to remove duplicates from rss table: ", err)
+			return
+		}
 	}
 }

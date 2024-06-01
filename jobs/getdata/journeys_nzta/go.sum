@@ -4,3 +4,5 @@ github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20240531200429-dd446bdcb15b h
 github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20240531200429-dd446bdcb15b/go.mod h1:fgRpwrD3ZDheqVoM6VyXgFYxpEdOe0vqEvp5cZ4YJ2Q=
 github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20240531201426-0afadaf5f8a0 h1:GQulNC6EiVu1a79+QBaEMLFxB8DXpDArj2HkiP4VHNY=
 github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20240531201426-0afadaf5f8a0/go.mod h1:fgRpwrD3ZDheqVoM6VyXgFYxpEdOe0vqEvp5cZ4YJ2Q=
+github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20240601005541-881caab09124 h1:NkgoQNSPl5ob3JEknxPnP4lazAIAr+k/meIZF1ZLhYQ=
+github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20240601005541-881caab09124/go.mod h1:fgRpwrD3ZDheqVoM6VyXgFYxpEdOe0vqEvp5cZ4YJ2Q=
