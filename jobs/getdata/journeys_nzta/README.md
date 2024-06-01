@@ -21,3 +21,8 @@ If building on machine running just do `go build -o`
 
 ### Notes
 Dont for get to cleaup before pushing!
+
+### go get from private repo
+`export GITHUB_TOKEN=123`
+`git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"`
+`cat ~/.gitconfig ; nano ~/.gitconfig`
