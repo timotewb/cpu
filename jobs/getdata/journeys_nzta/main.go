@@ -45,5 +45,12 @@ func main() {
 		return
 	}
 
-	app.Cameras(allConfig)
+	// Read Job Config
+	jobConfig, err := app.ReadJobConfig(configDir)
+	if err != nil {
+		log.Fatalf("function ReadJobConfig() failed: %v", err)
+		return
+	}
+
+	app.Cameras(allConfig, jobConfig)
 }

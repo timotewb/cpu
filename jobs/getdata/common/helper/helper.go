@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -68,15 +69,17 @@ func GetOrCreateSQLiteDB(conf config.AllConfig, jobName string) (*sql.DB, string
 		if filepath.Ext(file.Name()) == ".db" && filepath.Base(file.Name())[:3] == jobName {
 
 			if sizeInMegabytes < conf.SQLiteMaxSizeMB {
-				timestampStr := file.Name()[4:18] // Assuming the format is "rss_YYYYMMDDHHMMSS.db"
-				timestamp, err := time.Parse("20060102150405", timestampStr)
-				if err != nil {
-					return nil, "", fmt.Errorf("failed to parse timestamp: %v", err)
-				}
-
-				if timestamp.After(mostRecentTime) {
-					mostRecentTime = timestamp
-					mostRecentDBPath = dbPath
+				underscorePos := strings.LastIndex(file.Name(), "_")
+				if underscorePos >= 0 {
+					timestampStr := file.Name()[underscorePos+1 : underscorePos+15] // +1 to skip the underscore itself
+					timestamp, err := time.Parse("20060102150405", timestampStr)
+					if err != nil {
+						return nil, "", fmt.Errorf("failed to parse timestamp: %v", err)
+					}
+					if timestamp.After(mostRecentTime) {
+						mostRecentTime = timestamp
+						mostRecentDBPath = dbPath
+					}
 				}
 			} else {
 				// move db file to loading dir
