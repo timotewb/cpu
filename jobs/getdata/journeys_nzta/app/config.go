@@ -9,7 +9,8 @@ import (
 
 type JobConfig struct {
 	// List of urls to be processed
-	CamerasURL string `json:"cameras_url"`
+	CamerasURL  string `json:"cameras_url"`
+	ChargersURL string `json:"chargers_url"`
 }
 
 // ReadJobConfig reads and returns the application configuration from a JSON file.
