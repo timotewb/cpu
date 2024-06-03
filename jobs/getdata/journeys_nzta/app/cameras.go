@@ -56,7 +56,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras_access_locations (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		cameras_id INTEGER,
-		FOREIGN KEY(cameras_id) REFERENCES cameras(id),
+		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE,
 		lat REAL,
 		lon REAL
 	)`)
@@ -67,7 +67,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras_connectors (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		cameras_id INTEGER,
-		FOREIGN KEY(cameras_id) REFERENCES cameras(id),
+		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE,
 		current TEXT,
 		kw_rates INTEGER,
 		connector_type TEXT,
@@ -81,7 +81,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras_regions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		cameras_id INTEGER,
-		FOREIGN KEY(cameras_id) REFERENCES cameras(id),
+		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE,
 		regions_id INTEGER
 	)`)
 	if err != nil {
@@ -164,6 +164,19 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		}
 		defer connectorsSQLPrep.Close()
 
+		// regionsSQL
+		regionsSQL := `
+		INSERT INTO cameras_regions (
+			cameras_id INTEGER,
+			regions_id INTEGER
+		) VALUES (?,?)
+		`
+		regionsSQLPrep, err := db.Prepare(regionsSQL)
+		if err != nil {
+			log.Printf("failed to prepare statement: %s\n", err.Error())
+		}
+		defer regionsSQLPrep.Close()
+
 		for i := 0; i < len(result.Features); i++ {
 			// Execute the statement with the charger record values
 			_, err = chargersSQLPrep.Exec(
@@ -219,13 +232,29 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 			}
 
 			// cameras_connectors
-			for a := 0; a < len(result.Features[i].Properties.AccessLocations); a++ {
+			for a := 0; a < len(result.Features[i].Properties.Connectors); a++ {
 
 				// Execute the statement with the charger record values
 				_, err = connectorsSQLPrep.Exec(
 					lastInsertedID,
-					result.Features[i].Properties.AccessLocations[a].Lat,
-					result.Features[i].Properties.AccessLocations[a].Lon,
+					result.Features[i].Properties.Connectors[a].Current,
+					result.Features[i].Properties.Connectors[a].KwRated,
+					result.Features[i].Properties.Connectors[a].ConnectorType,
+					result.Features[i].Properties.Connectors[a].OperationStatus,
+					result.Features[i].Properties.Connectors[a].NextPlannedOutage,
+				)
+				if err != nil {
+					log.Printf("failed to execute statement: %s\n", err.Error())
+				}
+			}
+
+			// cameras_regions
+			for a := 0; a < len(result.Features[i].Properties.Regions); a++ {
+
+				// Execute the statement with the charger record values
+				_, err = regionsSQLPrep.Exec(
+					lastInsertedID,
+					result.Features[i].Properties.Regions[a].ID,
 				)
 				if err != nil {
 					log.Printf("failed to execute statement: %s\n", err.Error())
@@ -233,10 +262,17 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 			}
 		}
 		// remvoe duplicates from table
-		_, err = db.Exec(`DELETE FROM cameras WHERE id NOT IN (SELECT MIN(id) FROM cameras GROUP BY CONCAT(last_edited, created, uniq))`)
+		_, err = db.Exec(`
+		DELETE FROM chargers 
+		WHERE id NOT IN (SELECT MIN(id) 
+		FROM cameras 
+		GROUP BY CONCAT(last_edited, created, uniq))
+		`)
 		if err != nil {
 			log.Fatal("failed to remove duplicates from rss table: ", err)
 			return
 		}
+
+		// remove orphaned
 	}
 }
