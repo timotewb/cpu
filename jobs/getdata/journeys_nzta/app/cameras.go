@@ -14,13 +14,13 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 	// get sqlite db
 	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
 	if err != nil {
-		log.Fatalf("function GetOrCreateSQLiteDB() failed: %v", err)
+		log.Fatalf("from Cameras(): function GetOrCreateSQLiteDB() failed: %v", err)
 	}
 	defer db.Close()
 	fmt.Println(dbPath)
 
 	// create target table if not exist
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS chargers (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		class_name TEXT,
 		last_edited TEXT,
@@ -47,53 +47,54 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		region TEXT,
 		owner_name TEXT,
 		charging_cost TEXT,
-		feature_type TEXT,
+		feature_type TEXT
 	)`)
 	if err != nil {
-		log.Fatalf("failed to create table: %v", err)
+		log.Fatalf("from Cameras(): failed to create table chargers: %v", err)
 	}
 	// cameras_access_locations
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras_access_locations (
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS cameras_access_locations (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		cameras_id INTEGER,
-		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE,
 		lat REAL,
-		lon REAL
+		lon REAL,
+		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE
 	)`)
 	if err != nil {
-		log.Fatalf("failed to create table: %v", err)
+		log.Fatalf("from Cameras(): failed to create table cameras_access_locations: %v", err)
 	}
 	// cameras_connectors
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras_connectors (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		cameras_id INTEGER,
-		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE,
 		current TEXT,
 		kw_rates INTEGER,
 		connector_type TEXT,
 		operation_status TEXT,
-		next_planning_outage TEXT
+		next_planning_outage TEXT,
+		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE
 	)`)
 	if err != nil {
-		log.Fatalf("failed to create table: %v", err)
+		log.Fatalf("from Cameras(): failed to create table cameras_connectors: %v", err)
 	}
 	// cameras_regions
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras_regions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		cameras_id INTEGER,
-		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE,
-		regions_id INTEGER
+		regions_id INTEGER,
+		FOREIGN KEY(cameras_id) REFERENCES cameras(id) ON DELETE CASCADE
 	)`)
 	if err != nil {
-		log.Fatalf("failed to create table: %v", err)
+		log.Fatalf("from Cameras(): failed to create table cameras_regions: %v", err)
 	}
 
 	var result ChargersModel
 	if jsonBytes, err := helper.GetXML(jobConfig.CamerasURL); err != nil {
-		log.Fatal("failed to get json: ", err)
+		log.Fatal("from Cameras(): failed to get json: ", err)
 	} else {
 		if err := json.Unmarshal(jsonBytes, &result); err != nil {
-			log.Fatal("format = 1 unmarshal error: ", err)
+			log.Fatal("from Cameras(): unmarshal error: ", err)
 		}
 
 		// chargersSQL
@@ -124,12 +125,12 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 			region ,
 			owner_name ,
 			charging_cost ,
-			feature_type ,
+			feature_type
 		) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 		`
 		chargersSQLPrep, err := db.Prepare(chargersSQL)
 		if err != nil {
-			log.Printf("failed to prepare statement: %s\n", err.Error())
+			log.Printf("from Cameras(): failed to prepare statement chargers: %s\n", err.Error())
 		}
 		defer chargersSQLPrep.Close()
 
@@ -143,7 +144,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		`
 		accessLocationsSQLPrep, err := db.Prepare(accessLocationsSQL)
 		if err != nil {
-			log.Printf("failed to prepare statement: %s\n", err.Error())
+			log.Printf("from Cameras(): failed to prepare statement cameras_access_locations: %s\n", err.Error())
 		}
 		defer accessLocationsSQLPrep.Close()
 
@@ -160,7 +161,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		`
 		connectorsSQLPrep, err := db.Prepare(connectorsSQL)
 		if err != nil {
-			log.Printf("failed to prepare statement: %s\n", err.Error())
+			log.Printf("from Cameras(): failed to prepare statement cameras_connectors: %s\n", err.Error())
 		}
 		defer connectorsSQLPrep.Close()
 
@@ -173,7 +174,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		`
 		regionsSQLPrep, err := db.Prepare(regionsSQL)
 		if err != nil {
-			log.Printf("failed to prepare statement: %s\n", err.Error())
+			log.Printf("from Cameras(): failed to prepare statement cameras_regions: %s\n", err.Error())
 		}
 		defer regionsSQLPrep.Close()
 
@@ -208,13 +209,13 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 				result.Features[i].Properties.FeatureType,
 			)
 			if err != nil {
-				log.Printf("failed to execute statement: %s\n", err.Error())
+				log.Printf("from Cameras(): failed to execute insert statement chargers: %s\n", err.Error())
 			}
 			// Fetch the last inserted ID
 			var lastInsertedID int64
 			err = db.QueryRow("SELECT last_insert_rowid();").Scan(&lastInsertedID)
 			if err != nil {
-				log.Printf("failed to get last pk: %s\n", err.Error())
+				log.Printf("from Cameras(): failed to get last pk: %s\n", err.Error())
 			}
 
 			// cameras_access_locations
@@ -227,7 +228,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 					result.Features[i].Properties.AccessLocations[a].Lon,
 				)
 				if err != nil {
-					log.Printf("failed to execute statement: %s\n", err.Error())
+					log.Printf("from Cameras(): failed to execute insert statement cameras_access_locations: %s\n", err.Error())
 				}
 			}
 
@@ -244,7 +245,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 					result.Features[i].Properties.Connectors[a].NextPlannedOutage,
 				)
 				if err != nil {
-					log.Printf("failed to execute statement: %s\n", err.Error())
+					log.Printf("from Cameras(): failed to execute insert statementcameras_connectors: %s\n", err.Error())
 				}
 			}
 
@@ -257,7 +258,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 					result.Features[i].Properties.Regions[a].ID,
 				)
 				if err != nil {
-					log.Printf("failed to execute statement: %s\n", err.Error())
+					log.Printf("from Cameras(): failed to execute insert statement cameras_regions: %s\n", err.Error())
 				}
 			}
 		}
@@ -269,7 +270,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		GROUP BY CONCAT(last_edited, created, uniq))
 		`)
 		if err != nil {
-			log.Fatal("failed to remove duplicates from rss table: ", err)
+			log.Fatal("from Cameras(): failed to remove duplicates from table chargers: ", err)
 			return
 		}
 

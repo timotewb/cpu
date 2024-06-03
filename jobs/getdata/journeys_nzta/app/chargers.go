@@ -12,12 +12,11 @@ import (
 func Chargers(allConfig config.AllConfig, jobConfig JobConfig) {
 
 	// get sqlite db
-	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
+	db, _, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
 	if err != nil {
 		log.Fatalf("function GetOrCreateSQLiteDB() failed: %v", err)
 	}
 	defer db.Close()
-	fmt.Println(dbPath)
 
 	// create target table if not exist
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS chargers (
