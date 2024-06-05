@@ -19,6 +19,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 
 	// create target table if not exist
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cameras (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		class_name TEXT,
 		last_edited TEXT,
@@ -48,21 +49,50 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 	var result CamerasModel
 	if jsonBytes, err := helper.GetXML(jobConfig.CamerasURL); err != nil {
 		log.Fatal("from Cameras(): failed to get json: ", err)
+		log.Fatal("from Cameras(): failed to get json: ", err)
 	} else {
 		if err := json.Unmarshal(jsonBytes, &result); err != nil {
-			log.Fatalf("from Cameras(): unmarshal error: %v\n", err)
+			log.Fatal("format = 1 unmarshal error: ", err)
 		}
-		sqlStatement := `
-		INSERT INTO cameras (
-			class_name, last_edited, created, external_id, name, description, offline, under_maintenance, image_url, latitude, longitude, direction, sort_group, tas_journey_id, region_id, tas_region_id, property_id, uniq, property_type, last_updated
-		) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+
+		// chargersSQL
+		chargersSQL := `
+		INSERT INTO chargers (
+			class_name ,
+			last_edited ,
+			created ,
+			site_id ,
+			name ,
+			operator ,
+			address ,
+			is_24_hours ,
+			car_park_count ,
+			has_carpark_cost ,
+			max_time_limit ,
+			has_tourist_attraction ,
+			provider_deleted ,
+			hide_from_feed ,
+			region_id ,
+			cameras_id ,
+			record_class_name ,
+			external_id ,
+			uniq ,
+			type ,
+			cameras_id0 ,
+			last_updated ,
+			region ,
+			owner_name ,
+			charging_cost ,
+			feature_type ,
+		) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 		`
 		// Prepare the statement
 		stmt, err := db.Prepare(sqlStatement)
 		if err != nil {
 			log.Fatalf("from Cameras(): failed to prepare insert statement: %s\n", err.Error())
 		}
-		defer stmt.Close()
+		defer connectorsSQLPrep.Close()
+
 		for i := 0; i < len(result.Features); i++ {
 			// Execute the statement with the camera record values
 			_, err = stmt.Exec(
@@ -73,10 +103,17 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 			}
 		}
 		// remvoe duplicates from table
-		_, err = db.Exec(`DELETE FROM cameras WHERE id NOT IN (SELECT MIN(id) FROM cameras GROUP BY CONCAT(last_edited, created, uniq))`)
+		_, err = db.Exec(`
+		DELETE FROM chargers 
+		WHERE id NOT IN (SELECT MIN(id) 
+		FROM cameras 
+		GROUP BY CONCAT(last_edited, created, uniq))
+		`)
 		if err != nil {
 			log.Fatalf("from Cameras(): failed to remove duplicates from cameras table: %v\n", err)
 			return
 		}
+
+		// remove orphaned
 	}
 }

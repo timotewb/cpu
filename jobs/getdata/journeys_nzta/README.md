@@ -7,7 +7,7 @@ GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-gnueabi-gcc go build -o build/rss
 If building on machine running just do `go build -o`
 
 ### To test
-1. Create `all.json` file in the ame dir as `main.go`
+1. Create `all.json` file in the same dir as `main.go`
 2. Add below json to file and add your data (check dirs exist)
 `
 {
@@ -16,7 +16,15 @@ If building on machine running just do `go build -o`
     "sqlite_max_size_mb":10
 }
 `
-3. Run below command to run
+3. Create `journeys_nzta.json` file in the same dir as `main.go`
+4. Add below json to file and add your data (check dirs exist)
+`
+{
+    "cameras_url":"https://www.journeys.nzta.govt.nz/assets/map-data-cache/cameras.json",
+    "chargers_url":"https://www.journeys.nzta.govt.nz/assets/map-data-cache/chargers.json"
+}
+`
+5. Run below command to run
 `go run . -c .`
 
 ### Notes
