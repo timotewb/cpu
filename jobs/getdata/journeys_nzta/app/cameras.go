@@ -76,7 +76,6 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		_, err = db.Exec(`DELETE FROM cameras WHERE id NOT IN (SELECT MIN(id) FROM cameras GROUP BY CONCAT(last_edited, created, uniq))`)
 		if err != nil {
 			log.Fatalf("from Cameras(): failed to remove duplicates from cameras table: %v\n", err)
-			return
 		}
 	}
 }

@@ -87,7 +87,7 @@ func Chargers(allConfig config.AllConfig, jobConfig JobConfig) {
 	}
 
 	var result ChargersModel
-	if jsonBytes, err := helper.GetXML(jobConfig.CamerasURL); err != nil {
+	if jsonBytes, err := helper.GetXML(jobConfig.ChargersURL); err != nil {
 		log.Fatalf("from Chargers(): failed to get json: %v\n", err)
 	} else {
 		if err := json.Unmarshal(jsonBytes, &result); err != nil {
@@ -263,7 +263,6 @@ func Chargers(allConfig config.AllConfig, jobConfig JobConfig) {
 		_, err = db.Exec(`DELETE FROM chargers WHERE id NOT IN (SELECT MIN(id) FROM chargers GROUP BY CONCAT(last_edited, created, uniq))`)
 		if err != nil {
 			log.Fatalf("from Chargers(): failed to remove duplicates from rss table: %v\n", err)
-			return
 		}
 	}
 }
