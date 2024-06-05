@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	fmt.Println("main")
 
 	var configDir string
 	var help bool
@@ -53,4 +52,5 @@ func main() {
 	}
 
 	app.Cameras(allConfig, jobConfig)
+	app.Chargers(allConfig, jobConfig)
 }
