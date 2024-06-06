@@ -48,21 +48,21 @@ func main() {
 	// Read All Config
 	allConfig, err := config.ReadAllConfig(configDir)
 	if err != nil {
-		log.Fatalf("function ReadAllConfig() failed: %v", err)
+		log.Fatalf("from main(): function ReadAllConfig() failed: %v", err)
 		return
 	}
 
 	// Read Job Config
 	jobConfig, err := app.ReadJobConfig(configDir)
 	if err != nil {
-		log.Fatalf("function ReadJobConfig() failed: %v", err)
+		log.Fatalf("from main(): function ReadJobConfig() failed: %v", err)
 		return
 	}
 
 	// get sqlite db
 	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "rss")
 	if err != nil {
-		log.Fatalf("function GetOrCreateSQLiteDB() failed: %v", err)
+		log.Fatalf("from main(): function GetOrCreateSQLiteDB() failed: %v", err)
 	}
 	defer db.Close()
 
@@ -76,7 +76,7 @@ func main() {
 		pubDate TEXT
 	)`)
 	if err != nil {
-		log.Fatalf("failed to create table: %v", err)
+		log.Fatalf("from main(): failed to create table: %v", err)
 	}
 
 	//----------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ func main() {
 	for i := 0; i < len(jobConfig.URLs); i++ {
 
 		if xmlBytes, err := helper.GetURLData(jobConfig.URLs[i].URL); err != nil {
-			log.Fatal("failed to get xml: ", err)
+			log.Fatal("from main(): failed to get xml: ", err)
 		} else {
 			// remove any difficult strings
 			xmlBytes = []byte(strings.ReplaceAll(string(xmlBytes), "atom:link", "atomlink"))
@@ -96,17 +96,17 @@ func main() {
 				result = &app.RssChannelFormat{}
 				xml.Unmarshal(xmlBytes, &result)
 				if err := xml.Unmarshal(xmlBytes, &result); err != nil {
-					log.Fatal("format = 1 unmarshal error: ", err)
+					log.Fatal("from main(): format = 1 unmarshal error: ", err)
 				}
 
 			} else if jobConfig.URLs[i].Format == 2 {
 				result = &app.FeedFormat{}
 				xml.Unmarshal(xmlBytes, &result)
 				if err := xml.Unmarshal(xmlBytes, &result); err != nil {
-					log.Fatal("format = 2 unmarshal error: ", err)
+					log.Fatal("from main(): format = 2 unmarshal error: ", err)
 				}
 			} else {
-				log.Fatal("unknown format type: ", err)
+				log.Fatal("from main(): unknown format type: ", err)
 			}
 
 			switch r := result.(type) {
@@ -120,7 +120,7 @@ func main() {
 					// tidy pubDate
 					d, err := helper.ParseDate(s.PubDate)
 					if err != nil {
-						log.Fatal("failed to insert data from rss channel data: ", err)
+						log.Fatal("from main(): failed to insert data from rss channel data: ", err)
 					} else {
 						s.PubDate = d
 					}
@@ -139,7 +139,7 @@ func main() {
 					}
 					_, err = db.Exec(`INSERT INTO rss (title, link, description, creator, pubDate) VALUES (?, ?, ?, ?, ?)`, s.Title, s.Link, desc, s.Creator, s.PubDate)
 					if err != nil {
-						log.Fatal("failed to insert data from rss channel data: ", err)
+						log.Fatal("from main(): failed to insert data from rss channel data: ", err)
 					}
 				}
 			case *app.FeedFormat:
@@ -165,7 +165,7 @@ func main() {
 					// tidy pubDate
 					d, err := helper.ParseDate(s.PubDate)
 					if err != nil {
-						log.Fatal("failed to insert data from rss channel data: ", err)
+						log.Fatal("from main(): failed to insert data from rss channel data: ", err)
 					} else {
 						s.PubDate = d
 					}
@@ -184,11 +184,11 @@ func main() {
 					}
 					_, err = db.Exec(`INSERT INTO rss (title, link, description, creator, pubDate) VALUES (?, ?, ?, ?, ?)`, s.Title, s.Link, desc, s.Creator.Name[0], s.PubDate)
 					if err != nil {
-						log.Fatal("failed to insert data from feed data: ", err)
+						log.Fatal("from main(): failed to insert data from feed data: ", err)
 					}
 				}
 			default:
-				log.Fatal("unexpected type")
+				log.Fatal("from main(): unexpected type")
 
 			}
 		}
@@ -196,7 +196,7 @@ func main() {
 		// remvoe duplicates from table
 		_, err = db.Exec(`DELETE FROM rss WHERE id NOT IN (SELECT MIN(id) FROM rss GROUP BY link)`)
 		if err != nil {
-			log.Fatal("failed to remove duplicates from rss table: ", err)
+			log.Fatal("from main(): failed to remove duplicates from rss table: ", err)
 			return
 		}
 	}
@@ -204,7 +204,7 @@ func main() {
 	// Set permissions to 777 for the newly created .db file
 	err = os.Chmod(dbPath, 0777)
 	if err != nil {
-		log.Fatal("failed to set permissions on db file: ", err)
+		log.Fatal("from main(): failed to set permissions on db file: ", err)
 		return
 	}
 }
