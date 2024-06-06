@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"log"
+	"os"
 
 	"github.com/timotewb/cpu/jobs/getdata/common/config"
 	"github.com/timotewb/cpu/jobs/getdata/common/helper"
@@ -11,7 +12,7 @@ import (
 func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 
 	// get sqlite db
-	db, _, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
+	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
 	if err != nil {
 		log.Fatalf("from Cameras(): function GetOrCreateSQLiteDB() failed: %v", err)
 	}
@@ -76,6 +77,11 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 		_, err = db.Exec(`DELETE FROM cameras WHERE id NOT IN (SELECT MIN(id) FROM cameras GROUP BY CONCAT(last_edited, created, uniq))`)
 		if err != nil {
 			log.Fatalf("from Cameras(): failed to remove duplicates from cameras table: %v\n", err)
+		}
+		err = os.Chmod(dbPath, 0777)
+		if err != nil {
+			log.Fatal("from Cameras(): failed to set permissions on db file: ", err)
+			return
 		}
 	}
 }

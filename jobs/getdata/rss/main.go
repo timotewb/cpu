@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/timotewb/cpu/jobs/getdata/common/config"
+	"github.com/timotewb/cpu/jobs/getdata/common/helper"
 	"github.com/timotewb/cpu/jobs/getdata/rss/app"
 )
 
@@ -44,7 +46,7 @@ func main() {
 	}
 
 	// Read All Config
-	allConfig, err := app.ReadAllConfig(configDir)
+	allConfig, err := config.ReadAllConfig(configDir)
 	if err != nil {
 		log.Fatalf("function ReadAllConfig() failed: %v", err)
 		return
@@ -58,7 +60,7 @@ func main() {
 	}
 
 	// get sqlite db
-	db, dbPath, err := app.GetOrCreateSQLiteDB(allConfig, "rss")
+	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "rss")
 	if err != nil {
 		log.Fatalf("function GetOrCreateSQLiteDB() failed: %v", err)
 	}
@@ -82,7 +84,7 @@ func main() {
 	//----------------------------------------------------------------------------------------
 	for i := 0; i < len(jobConfig.URLs); i++ {
 
-		if xmlBytes, err := app.GetXML(jobConfig.URLs[i].URL); err != nil {
+		if xmlBytes, err := helper.GetURLData(jobConfig.URLs[i].URL); err != nil {
 			log.Fatal("failed to get xml: ", err)
 		} else {
 			// remove any difficult strings
@@ -116,7 +118,7 @@ func main() {
 					re := regexp.MustCompile(`(?s)<[^>]*>`)
 
 					// tidy pubDate
-					d, err := app.ParseDate(s.PubDate)
+					d, err := helper.ParseDate(s.PubDate)
 					if err != nil {
 						log.Fatal("failed to insert data from rss channel data: ", err)
 					} else {
@@ -161,7 +163,7 @@ func main() {
 					}
 
 					// tidy pubDate
-					d, err := app.ParseDate(s.PubDate)
+					d, err := helper.ParseDate(s.PubDate)
 					if err != nil {
 						log.Fatal("failed to insert data from rss channel data: ", err)
 					} else {
