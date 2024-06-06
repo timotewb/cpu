@@ -46,7 +46,7 @@ func Cameras(allConfig config.AllConfig, jobConfig JobConfig) {
 	}
 
 	var result CamerasModel
-	if jsonBytes, err := helper.GetXML(jobConfig.CamerasURL); err != nil {
+	if jsonBytes, err := helper.GetURLData(jobConfig.CamerasURL); err != nil {
 		log.Fatalf("from Cameras(): failed to get json: %v\n", err)
 	} else {
 		if err := json.Unmarshal(jsonBytes, &result); err != nil {

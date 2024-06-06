@@ -14,7 +14,7 @@ import (
 	"github.com/timotewb/cpu/jobs/getdata/common/config"
 )
 
-func GetXML(url string) ([]byte, error) {
+func GetURLData(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return []byte{}, fmt.Errorf("get error: %v", err)
