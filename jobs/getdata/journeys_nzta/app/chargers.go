@@ -88,7 +88,7 @@ func Chargers(allConfig config.AllConfig, jobConfig JobConfig) {
 	}
 
 	var result ChargersModel
-	if jsonBytes, err := helper.GetXML(jobConfig.ChargersURL); err != nil {
+	if jsonBytes, err := helper.GetURLData(jobConfig.ChargersURL); err != nil {
 		log.Fatalf("from Chargers(): failed to get json: %v\n", err)
 	} else {
 		if err := json.Unmarshal(jsonBytes, &result); err != nil {
