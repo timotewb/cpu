@@ -14,6 +14,7 @@ import (
 	"github.com/timotewb/cpu/jobs/getdata/common/config"
 )
 
+// GetURLData submits a get request to a url and returns the bytes
 func GetURLData(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
