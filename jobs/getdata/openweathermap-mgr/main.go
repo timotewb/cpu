@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -49,21 +50,18 @@ func main() {
 	allConfig, err := config.ReadAllConfig(configDir)
 	if err != nil {
 		log.Fatalf("function ReadAllConfig() failed: %v", err)
-		return
 	}
 
 	// Read Job Config
 	jobConfig, err := app.ReadJobConfig(configDir)
 	if err != nil {
 		log.Fatalf("function ReadJobConfig() failed: %v", err)
-		return
 	}
 
 	// ReadCity List
 	cityList, err := app.ReadCityList(configDir)
 	if err != nil {
 		log.Fatalf("function ReadCityList() failed: %v", err)
-		return
 	}
 
 	var body BodyType
@@ -86,13 +84,14 @@ func main() {
 			// Prepare the JSON body
 			jsonBody, err := json.Marshal(body)
 			if err != nil {
-				log.Fatalf("Error marshalling body to JSON: %v", err)
+				log.Fatalf("error marshalling body to JSON: %v", err)
 			}
 
+			fmt.Println(string(jsonBody))
 			// Create a new HTTP request
 			req, err := http.NewRequest("POST", allConfig.APIHost, bytes.NewBuffer(jsonBody))
 			if err != nil {
-				log.Fatalf("Error creating new HTTP request: %v", err)
+				log.Fatalf("error creating new HTTP request: %v", err)
 			}
 
 			// Set the Content-Type header to application/json
@@ -102,13 +101,17 @@ func main() {
 			client := &http.Client{}
 			resp, err := client.Do(req)
 			if err != nil {
-				log.Fatalf("Error sending POST request: %v", err)
+				log.Fatalf("error sending POST request: %v", err)
 			}
 			defer resp.Body.Close()
 
 			// Check the response status
 			if resp.StatusCode != http.StatusOK {
-				log.Fatalf("Received non-200 response: %s", resp.Status)
+				bytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					log.Fatalf("error reading response body: %v", err)
+				}
+				log.Fatalf("received non-200 response: %s - body: %s", resp.Status, string(bytes))
 			}
 		} else {
 			if cityIDs == "" {

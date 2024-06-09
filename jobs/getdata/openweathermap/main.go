@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/timotewb/cpu/jobs/getdata/common/config"
 	"github.com/timotewb/cpu/jobs/getdata/openweathermap/app"
 )
 
@@ -43,17 +44,15 @@ func main() {
 	}
 
 	// Read All Config
-	allConfig, err := app.ReadAllConfig(configDir)
+	allConfig, err := config.ReadAllConfig(configDir)
 	if err != nil {
 		log.Fatalf("function ReadAllConfig() failed: %v", err)
-		return
 	}
 
 	// Read Job Config
 	jobConfig, err := app.ReadJobConfig(configDir)
 	if err != nil {
 		log.Fatalf("function ReadJobConfig() failed: %v", err)
-		return
 	}
 
 	fmt.Println(allConfig)
@@ -61,21 +60,23 @@ func main() {
 	// make call to api
 	resp, err := http.Get(fmt.Sprintf("https://api.openweathermap.org/data/2.5/group?id=%v&appid=%s", cityIDs, jobConfig.APIKey))
 	if err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
+		log.Fatalf("function http.Get() failed: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		fmt.Printf("Error: Non 200 status code returned when attempting to retrieve file. Status Code was %v.\n", resp.StatusCode)
-		os.Exit(1)
+	if resp.StatusCode != http.StatusOK {
+		bytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalf("error reading response body: %v", err)
+		}
+		log.Fatalf("received non-200 response: %s - body: %s", resp.Status, string(bytes))
 	}
 
 	// convert respose to string then return
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("error reading response body (StatusOK): %v", err)
 		}
 		var data app.ResponseWrapper
 		json.Unmarshal(bodyBytes, &data)
@@ -84,6 +85,7 @@ func main() {
 			b, err := json.Marshal(&data.List)
 			if err != nil {
 				fmt.Println(err)
+				log.Fatalf("function json.Marshal() failed: %v", err)
 			}
 			fmt.Print(string(b))
 		}
