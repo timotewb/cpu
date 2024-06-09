@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/timotewb/cpu/jobs/getdata/common/config"
 	"github.com/timotewb/cpu/jobs/getdata/openweathermap-mgr/app"
 )
 
@@ -45,13 +46,20 @@ func main() {
 	}
 
 	// Read All Config
-	allConfig, err := app.ReadAllConfig(configDir)
+	allConfig, err := config.ReadAllConfig(configDir)
 	if err != nil {
 		log.Fatalf("function ReadAllConfig() failed: %v", err)
 		return
 	}
 
 	// Read Job Config
+	jobConfig, err := app.ReadJobConfig(configDir)
+	if err != nil {
+		log.Fatalf("function ReadJobConfig() failed: %v", err)
+		return
+	}
+
+	// ReadCity List
 	cityList, err := app.ReadCityList(configDir)
 	if err != nil {
 		log.Fatalf("function ReadCityList() failed: %v", err)
@@ -64,7 +72,7 @@ func main() {
 	var g int
 
 	body.Name = "openweathermap"
-	groupSize = 20
+	groupSize = jobConfig.GroupSize
 	g = 0
 
 	for i := 0; i < len(cityList); i++ {

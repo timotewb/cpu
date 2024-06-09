@@ -15,6 +15,8 @@ type AllConfig struct {
 	LoadingPath string `json:"loading_dir"`
 	// JobSQLiteMaxSizeMBList is the max size of a sqlite db in MB before a new db file is created.
 	SQLiteMaxSizeMB int `json:"sqlite_max_size_mb"`
+	//APIHost is the ip and path for calling api
+	APIHost string `json:"api_host"`
 }
 
 // ReadAllConfig reads and returns the application configuration from a JSON file.
