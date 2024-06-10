@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/timotewb/cpu/jobs/getdata/common/config"
+	"github.com/timotewb/cpu/jobs/getdata/common/helper"
 	"github.com/timotewb/cpu/jobs/getdata/openweathermap/app"
 )
 
@@ -72,6 +73,67 @@ func main() {
 		log.Fatalf("received non-200 response: %s - body: %s", resp.Status, string(bytes))
 	}
 
+	// get sqlite db
+	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
+	if err != nil {
+		log.Fatalf("from Cameras(): function GetOrCreateSQLiteDB() failed: %v", err)
+	}
+	defer db.Close()
+
+	fmt.Println(dbPath)
+
+	// create target table if not exist
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS openweathermap (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		latitude REAL,
+		longitude REAL,
+		weather_details_id INTEGER,
+		base STRING,
+		teamp REAL,
+		feels_like REAL,
+		pressure INTEGER,
+		humidity INTEGER,
+		temp_min REAL,
+		temp_max REAL,
+		sea_level REAL,
+		grnd_level REAL,
+		visibility INTEGER,
+		wind_speed REAL,
+		wind_deg REAL,
+		clouds INTEGER,
+		rain1h INTEGER,
+		rain3h INTEGER,
+		snow1h INTEGER,
+		snow3h INTEGER,
+		dt INTEGER,
+		sys_type INTEGER,
+		sys_id INTEGER,
+		sys_message STRING,
+		sys_country STRING,
+		sunrise INTEGER,
+		sunset INTEGER,
+		timezone INTEGER,
+		id0 INTEGER,
+		name STRING,
+		cod INTEGER
+	)`)
+	if err != nil {
+		log.Fatalf("failed to create table 'openweathermap': %v\n", err)
+	}
+	// chargers_access_locations
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS weather_details (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		weather_details_id INTEGER,
+		id0 INTEGER,
+		main STRING,
+		description STRING,
+		icon STRING,
+		FOREIGN KEY(weather_details_id) REFERENCES openweathermap(id) ON DELETE CASCADE
+	)`)
+	if err != nil {
+		log.Fatalf("from Chargers(): failed to create table 'chargers_access_locations': %v\n", err)
+	}
+
 	// convert respose to string then return
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
@@ -82,12 +144,15 @@ func main() {
 		json.Unmarshal(bodyBytes, &data)
 		if data.Cnt > 0 {
 			// load data to db
-			b, err := json.Marshal(&data.List)
-			if err != nil {
-				fmt.Println(err)
-				log.Fatalf("function json.Marshal() failed: %v", err)
+			// b, err := json.Marshal(&data.List)
+			// if err != nil {
+			// 	fmt.Println(err)
+			// 	log.Fatalf("function json.Marshal() failed: %v", err)
+			// }
+
+			for i := 0; i < len(data.List); i++ {
+				fmt.Println(data.List[i].Clouds)
 			}
-			fmt.Print(string(b))
 		}
 	}
 }
