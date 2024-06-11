@@ -88,10 +88,6 @@ func main() {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		coord_latitude REAL,
 		coord_longitude REAL,
-		weather_id INTEGER,
-		weather_main STRING,
-		weather_description STRING,
-		weather_icon STRING,
 		base STRING,
 		main_temp REAL,
 		main_feels_like REAL,
@@ -143,12 +139,12 @@ func main() {
 	//----------------------------------------------------------------------------------------
 	sqlInsertOWM := `
 	INSERT INTO openweathermap (
-		coord_latitude, coord_longitude, weather_id, weather_main, weather_description, weather_icon, 
+		coord_latitude, coord_longitude, 
 		base, main_temp, main_feels_like, main_pressure, main_humidity, main_temp_min, main_temp_max, 
 		main_sea_level, main_grnd_level, visibility, wind_speed, wind_deg, cloud_all, rain_1h, rain_3h, 
 		snow_1h, snow_3h, dt, sys_type, sys_id, sys_message, sys_country, sys_sunrise, sys_sunset, 
 		timezone, id0, name, cod
-	) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+	) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 	`
 	// Prepare the statement
 	stmtOWM, err := db.Prepare(sqlInsertOWM)
@@ -175,15 +171,10 @@ func main() {
 		var data app.ResponseWrapper
 		json.Unmarshal(bodyBytes, &data)
 		if data.Cnt > 0 {
-			// load data to db
-			// b, err := json.Marshal(&data.List)
-			// if err != nil {
-			// 	fmt.Println(err)
-			// 	log.Fatalf("function json.Marshal() failed: %v", err)
-			// }
 
 			for i := 0; i < len(data.List); i++ {
 
+				fmt.Println(data.List[i].Snow.Snow1h)
 				_, err = stmtOWM.Exec(
 					data.List[i].Coord.Lat,
 					data.List[i].Coord.Lon,
