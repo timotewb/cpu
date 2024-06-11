@@ -47,13 +47,13 @@ func main() {
 	// Read All Config
 	allConfig, err := config.ReadAllConfig(configDir)
 	if err != nil {
-		log.Fatalf("function ReadAllConfig() failed: %v", err)
+		log.Fatalf("from Openweathermap(): function ReadAllConfig() failed: %v", err)
 	}
 
 	// Read Job Config
 	jobConfig, err := app.ReadJobConfig(configDir)
 	if err != nil {
-		log.Fatalf("function ReadJobConfig() failed: %v", err)
+		log.Fatalf("from Openweathermap(): function ReadJobConfig() failed: %v", err)
 	}
 
 	fmt.Println(allConfig)
@@ -61,84 +61,116 @@ func main() {
 	// make call to api
 	resp, err := http.Get(fmt.Sprintf("https://api.openweathermap.org/data/2.5/group?id=%v&appid=%s", cityIDs, jobConfig.APIKey))
 	if err != nil {
-		log.Fatalf("function http.Get() failed: %v", err)
+		log.Fatalf("from Openweathermap(): function http.Get() failed: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		bytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatalf("error reading response body: %v", err)
+			log.Fatalf("from Openweathermap(): error reading response body: %v", err)
 		}
-		log.Fatalf("received non-200 response: %s - body: %s", resp.Status, string(bytes))
+		log.Fatalf("from Openweathermap(): received non-200 response: %s - body: %s", resp.Status, string(bytes))
 	}
 
 	// get sqlite db
 	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
 	if err != nil {
-		log.Fatalf("from Cameras(): function GetOrCreateSQLiteDB() failed: %v", err)
+		log.Fatalf("from Openweathermap(): function GetOrCreateSQLiteDB() failed: %v", err)
 	}
 	defer db.Close()
 
 	fmt.Println(dbPath)
-
-	// create target table if not exist
+	//----------------------------------------------------------------------------------------
+	// Create tables code
+	//----------------------------------------------------------------------------------------
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS openweathermap (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		latitude REAL,
-		longitude REAL,
-		weather_details_id INTEGER,
+		coord_latitude REAL,
+		coord_longitude REAL,
+		weather_id INTEGER,
+		weather_main STRING,
+		weather_description STRING,
+		weather_icon STRING,
 		base STRING,
-		teamp REAL,
-		feels_like REAL,
-		pressure INTEGER,
-		humidity INTEGER,
-		temp_min REAL,
-		temp_max REAL,
-		sea_level REAL,
-		grnd_level REAL,
+		main_temp REAL,
+		main_feels_like REAL,
+		main_pressure INTEGER,
+		main_humidity INTEGER,
+		main_temp_min REAL,
+		main_temp_max REAL,
+		main_sea_level REAL,
+		main_grnd_level REAL,
 		visibility INTEGER,
 		wind_speed REAL,
 		wind_deg REAL,
-		clouds INTEGER,
-		rain1h INTEGER,
-		rain3h INTEGER,
-		snow1h INTEGER,
-		snow3h INTEGER,
+		cloud_all INTEGER,
+		rain_1h INTEGER,
+		rain_3h INTEGER,
+		snow_1h INTEGER,
+		snow_3h INTEGER,
 		dt INTEGER,
 		sys_type INTEGER,
 		sys_id INTEGER,
 		sys_message STRING,
 		sys_country STRING,
-		sunrise INTEGER,
-		sunset INTEGER,
+		sys_sunrise INTEGER,
+		sys_sunset INTEGER,
 		timezone INTEGER,
 		id0 INTEGER,
 		name STRING,
 		cod INTEGER
 	)`)
 	if err != nil {
-		log.Fatalf("failed to create table 'openweathermap': %v\n", err)
+		log.Fatalf("from Openweathermap(): failed to create table 'openweathermap': %v\n", err)
 	}
 	// chargers_access_locations
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS weather_details (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		weather_details_id INTEGER,
+		openweathermap_id INTEGER,
 		id0 INTEGER,
 		main STRING,
 		description STRING,
 		icon STRING,
-		FOREIGN KEY(weather_details_id) REFERENCES openweathermap(id) ON DELETE CASCADE
+		FOREIGN KEY(openweathermap_id) REFERENCES openweathermap(id) ON DELETE CASCADE
 	)`)
 	if err != nil {
-		log.Fatalf("from Chargers(): failed to create table 'chargers_access_locations': %v\n", err)
+		log.Fatalf("from Openweathermap(): failed to create table 'chargers_access_locations': %v\n", err)
+	}
+
+	//----------------------------------------------------------------------------------------
+	// Insert Into code
+	//----------------------------------------------------------------------------------------
+	sqlInsertOWM := `
+	INSERT INTO openweathermap (
+		coord_latitude, coord_longitude, weather_id, weather_main, weather_description, weather_icon, 
+		base, main_temp, main_feels_like, main_pressure, main_humidity, main_temp_min, main_temp_max, 
+		main_sea_level, main_grnd_level, visibility, wind_speed, wind_deg, cloud_all, rain_1h, rain_3h, 
+		snow_1h, snow_3h, dt, sys_type, sys_id, sys_message, sys_country, sys_sunrise, sys_sunset, 
+		timezone, id0, name, cod
+	) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+	`
+	// Prepare the statement
+	stmtOWM, err := db.Prepare(sqlInsertOWM)
+	if err != nil {
+		log.Fatalf("from Openweathermap(): failed to prepare insert into openweathermap statement: %s\n", err.Error())
+	}
+	sqlInsertWD := `
+	INSERT INTO weather_details (
+		openweathermap_id, id0, main, description, icon
+	) VALUES (?,?,?,?,?);
+	`
+	// Prepare the statement
+	stmtWD, err := db.Prepare(sqlInsertWD)
+	if err != nil {
+		log.Fatalf("from Openweathermap(): failed to prepare insert into weather_details statement: %s\n", err.Error())
 	}
 
 	// convert respose to string then return
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatalf("error reading response body (StatusOK): %v", err)
+			log.Fatalf("from Openweathermap(): error reading response body (StatusOK): %v", err)
 		}
 		var data app.ResponseWrapper
 		json.Unmarshal(bodyBytes, &data)
@@ -151,7 +183,43 @@ func main() {
 			// }
 
 			for i := 0; i < len(data.List); i++ {
-				fmt.Println(data.List[i].Clouds)
+
+				_, err = stmtOWM.Exec(
+					data.List[i].Coord.Lat,
+					data.List[i].Coord.Lon,
+					data.List[i].Base,
+					data.List[i].Main.Temp,
+					data.List[i].Main.Feels_like,
+					data.List[i].Main.Pressure,
+					data.List[i].Main.Humidity,
+					data.List[i].Main.Temp_min,
+					data.List[i].Main.Temp_max,
+					data.List[i].Main.Sea_level,
+					data.List[i].Main.Grnd_level,
+					data.List[i].Visibility,
+					data.List[i].Wind.Speed,
+					data.List[i].Wind.Deg,
+					data.List[i].Clouds.All,
+					data.List[i].Rain.Rain1h,
+					data.List[i].Rain.Rain3h,
+					data.List[i].Snow.Snow1h,
+					data.List[i].Snow.Snow3h,
+					data.List[i].Dt,
+					data.List[i].Sys.Type,
+					data.List[i].Sys.Id,
+					data.List[i].Sys.Message,
+					data.List[i].Sys.Country,
+					data.List[i].Sys.Sunrise,
+					data.List[i].Sys.Sunset,
+					data.List[i].Timezone,
+					data.List[i].Id,
+					data.List[i].Name,
+					data.List[i].Cod,
+				)
+				if err != nil {
+					log.Fatalf("from Cameras(): failed to execute insert into openweathermap statement: %s\n", err.Error())
+				}
+
 			}
 		}
 	}
