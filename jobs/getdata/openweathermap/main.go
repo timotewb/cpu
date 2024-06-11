@@ -217,10 +217,41 @@ func main() {
 					data.List[i].Cod,
 				)
 				if err != nil {
-					log.Fatalf("from Cameras(): failed to execute insert into openweathermap statement: %s\n", err.Error())
+					log.Fatalf("from Openweathermap(): failed to execute insert into openweathermap statement: %s\n", err.Error())
+				}
+				// Fetch the last inserted ID
+				var lastInsertedID int64
+				err = db.QueryRow("SELECT last_insert_rowid();").Scan(&lastInsertedID)
+				if err != nil {
+					log.Fatalf("from Openweathermap(): failed to get last pk: %s\n", err.Error())
 				}
 
+				// weather_details
+				for a := 0; a < len(data.List[i].Weather); a++ {
+
+					// Execute the statement with the charger record values
+					_, err = stmtWD.Exec(
+						lastInsertedID,
+						data.List[i].Weather[a].Id,
+						data.List[i].Weather[a].Main,
+						data.List[i].Weather[a].Description,
+						data.List[i].Weather[a].Icon,
+					)
+					if err != nil {
+						log.Fatalf("from Openweathermap(): failed to execute 'INSERT INTO weather_details' statement: %s\n", err.Error())
+					}
+				}
 			}
 		}
+	}
+	// remvoe duplicates from table
+	_, err = db.Exec(`DELETE FROM openweathermap WHERE id NOT IN (SELECT MIN(id) FROM openweathermap GROUP BY CONCAT(last_edited, created, uniq))`)
+	if err != nil {
+		log.Fatalf("from Openweathermap(): failed to remove duplicates from openweathermap table: %v\n", err)
+	}
+	err = os.Chmod(dbPath, 0777)
+	if err != nil {
+		log.Fatal("from Openweathermap(): failed to set permissions on db file: ", err)
+		return
 	}
 }
