@@ -56,10 +56,8 @@ func main() {
 		log.Fatalf("from Openweathermap(): function ReadJobConfig() failed: %v", err)
 	}
 
-	fmt.Println(allConfig)
-
 	// make call to api
-	resp, err := http.Get(fmt.Sprintf("https://api.openweathermap.org/data/2.5/group?id=%v&appid=%s", cityIDs, jobConfig.APIKey))
+	resp, err := http.Get(fmt.Sprintf("https://api.openweathermap.org/data/2.5/group?id=%v&appid=%s&units=metric", cityIDs, jobConfig.APIKey))
 	if err != nil {
 		log.Fatalf("from Openweathermap(): function http.Get() failed: %v", err)
 	}
@@ -80,7 +78,6 @@ func main() {
 	}
 	defer db.Close()
 
-	fmt.Println(dbPath)
 	//----------------------------------------------------------------------------------------
 	// Create tables code
 	//----------------------------------------------------------------------------------------
@@ -144,7 +141,7 @@ func main() {
 		main_sea_level, main_grnd_level, visibility, wind_speed, wind_deg, cloud_all, rain_1h, rain_3h, 
 		snow_1h, snow_3h, dt, sys_type, sys_id, sys_message, sys_country, sys_sunrise, sys_sunset, 
 		timezone, id0, name, cod
-	) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+	) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 	`
 	// Prepare the statement
 	stmtOWM, err := db.Prepare(sqlInsertOWM)
@@ -174,7 +171,6 @@ func main() {
 
 			for i := 0; i < len(data.List); i++ {
 
-				fmt.Println(data.List[i].Snow.Snow1h)
 				_, err = stmtOWM.Exec(
 					data.List[i].Coord.Lat,
 					data.List[i].Coord.Lon,
@@ -236,7 +232,7 @@ func main() {
 		}
 	}
 	// remvoe duplicates from table
-	_, err = db.Exec(`DELETE FROM openweathermap WHERE id NOT IN (SELECT MIN(id) FROM openweathermap GROUP BY CONCAT(last_edited, created, uniq))`)
+	_, err = db.Exec(`DELETE FROM openweathermap WHERE id NOT IN (SELECT MIN(id) FROM openweathermap GROUP BY CONCAT(id0, dt))`)
 	if err != nil {
 		log.Fatalf("from Openweathermap(): failed to remove duplicates from openweathermap table: %v\n", err)
 	}
