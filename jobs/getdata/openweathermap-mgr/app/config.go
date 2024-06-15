@@ -45,8 +45,9 @@ func ReadCityList(configDir string) (CityList, error) {
 
 type JobConfig struct {
 	// List of urls to be processed
-	APIKey    string `json:"api_key"`
-	GroupSize int    `json:"group_size"`
+	APIKey       string `json:"api_key"`
+	GroupSize    int    `json:"group_size"`
+	SleepTimeSec int    `json:"sleep_time_sec"`
 }
 
 // ReadJobConfig reads and returns the application configuration from a JSON file.

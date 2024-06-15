@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/timotewb/cpu/jobs/getdata/common/config"
 	"github.com/timotewb/cpu/jobs/getdata/openweathermap-mgr/app"
@@ -115,6 +116,7 @@ func main() {
 			body.Args = make([]string, 0)
 			cityIDs = ""
 			g = 0
+			time.Sleep(time.Duration(jobConfig.SleepTimeSec))
 
 		} else {
 			if cityIDs == "" {
