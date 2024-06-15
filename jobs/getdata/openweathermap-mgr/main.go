@@ -116,7 +116,7 @@ func main() {
 			body.Args = make([]string, 0)
 			cityIDs = ""
 			g = 0
-			time.Sleep(time.Duration(jobConfig.SleepTimeSec))
+			time.Sleep(time.Duration(jobConfig.SleepTimeSec) * time.Second)
 
 		} else {
 			if cityIDs == "" {
