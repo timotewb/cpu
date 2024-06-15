@@ -112,6 +112,7 @@ func main() {
 				log.Fatalf("received non-200 response: %s - body: %s", resp.Status, string(bytes))
 			}
 
+			body.Args = make([]string, 0)
 			cityIDs = ""
 			g = 0
 
