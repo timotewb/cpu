@@ -126,20 +126,47 @@ func MoveFile(srcFilePath, destDirPath string) error {
 		return fmt.Errorf("failed to check if directory exists: %v", err)
 	}
 
-	// Move the file
+	// Construct the destination file path
 	destFilePath := filepath.Join(destDirPath, filepath.Base(srcFilePath))
-	err = os.Rename(srcFilePath, destFilePath)
+
+	// Copy the file to the destination
+	err = copyFile(srcFilePath, destFilePath)
 	if err != nil {
-		return fmt.Errorf("failed to move file: %v", err)
+		return fmt.Errorf("failed to copy file: %v", err)
 	}
 
-	// Set permissions to 777 for the moved file
+	// Delete the source file
+	err = os.Remove(srcFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to remove source file: %v", err)
+	}
+
+	// Set permissions to 777 for the copied file
 	err = os.Chmod(destFilePath, 0777)
 	if err != nil {
-		return fmt.Errorf("failed to set permissions on moved file: %v", err)
+		return fmt.Errorf("failed to set permissions on copied file: %v", err)
 	}
 
 	return nil
+}
+
+// copyFile copies the contents of src to dst.
+// If both files exist, src is replaced.
+func copyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }
 
 func ParseDate(dateStr string) (string, error) {

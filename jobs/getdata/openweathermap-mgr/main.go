@@ -78,8 +78,6 @@ func main() {
 		if g == groupSize || i == len(cityList) {
 
 			body.Args = append(body.Args, "-c", configDir, "-i", cityIDs)
-			cityIDs = ""
-			g = 0
 
 			// Prepare the JSON body
 			jsonBody, err := json.Marshal(body)
@@ -113,6 +111,10 @@ func main() {
 				}
 				log.Fatalf("received non-200 response: %s - body: %s", resp.Status, string(bytes))
 			}
+
+			cityIDs = ""
+			g = 0
+
 		} else {
 			if cityIDs == "" {
 				cityIDs = strconv.Itoa(int(cityList[i].Id))
@@ -122,4 +124,5 @@ func main() {
 			g += 1
 		}
 	}
+
 }
