@@ -91,14 +91,14 @@ func main() {
 			cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error executing command: %s", err)})
+				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error executing command: %s", err), "cmd": cmd.String()})
 				return
 			}
 			// Write the output back to the response
 			c.String(http.StatusOK, string(output))
 		} else {
 			// Write the output back to the response
-			c.JSON(http.StatusNotFound, gin.H{"error": "Name not found in job list"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Name not found in job list", "job": body.Name})
 		}
 
 	})
