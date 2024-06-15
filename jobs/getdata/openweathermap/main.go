@@ -72,7 +72,7 @@ func main() {
 	}
 
 	// get sqlite db
-	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "journeys_nzta")
+	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "openweathermap")
 	if err != nil {
 		log.Fatalf("from Openweathermap(): function GetOrCreateSQLiteDB() failed: %v", err)
 	}
