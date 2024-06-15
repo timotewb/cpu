@@ -91,7 +91,7 @@ func main() {
 			cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error executing command: %s", err), "cmd": cmd.String()})
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "cmd": cmd.String()})
 				return
 			}
 			// Write the output back to the response
