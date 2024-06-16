@@ -17,6 +17,8 @@ type AllConfig struct {
 	SQLiteMaxSizeMB int `json:"sqlite_max_size_mb"`
 	//APIHost is the ip and path for calling api
 	APIHost string `json:"api_host"`
+	//SQLiteMaxAgeDays is the number of days old a db file can be before it is moved
+	SQLiteMaxAgeDays int `json:"sqlite_max_age_days"`
 }
 
 // ReadAllConfig reads and returns the application configuration from a JSON file.

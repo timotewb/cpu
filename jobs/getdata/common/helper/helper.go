@@ -36,6 +36,7 @@ func GetURLData(url string) ([]byte, error) {
 
 func GetOrCreateSQLiteDB(conf config.AllConfig, jobName string) (*sql.DB, string, error) {
 
+	// ceate the staging directory if it does not exist
 	err := os.MkdirAll(conf.StagingPath, 0777)
 	if err != nil {
 		return nil, "", fmt.Errorf("unable to create staging dir: %v", err)
@@ -67,26 +68,30 @@ func GetOrCreateSQLiteDB(conf config.AllConfig, jobName string) (*sql.DB, string
 		// Convert the size to megabytes
 		sizeInMegabytes := int(sizeInBytes) / (1024 * 1024)
 
+		// Check the file is a db file and it is prefixed with the job name
 		if filepath.Ext(file.Name()) == ".db" && filepath.Base(file.Name())[:len(jobName)] == jobName {
 
-			if sizeInMegabytes < conf.SQLiteMaxSizeMB {
-				underscorePos := strings.LastIndex(file.Name(), "_")
-				if underscorePos >= 0 {
-					timestampStr := file.Name()[underscorePos+1 : underscorePos+15] // +1 to skip the underscore itself
-					timestamp, err := time.Parse("20060102150405", timestampStr)
-					if err != nil {
-						return nil, "", fmt.Errorf("failed to parse timestamp: %v", err)
-					}
-					if timestamp.After(mostRecentTime) {
-						mostRecentTime = timestamp
-						mostRecentDBPath = dbPath
-					}
-				}
-			} else {
+			// get the timestamp from file name
+			underscorePos := strings.LastIndex(file.Name(), "_")
+			timestampStr := file.Name()[underscorePos+1 : underscorePos+15] // +1 to skip the underscore itself
+			timestamp, err := time.Parse("20060102150405", timestampStr)
+			if err != nil {
+				return nil, "", fmt.Errorf("failed to parse timestamp: %v", err)
+			}
+			// Calculate the timestamp SQLiteMaxAgeDays days ago
+			maxAge := time.Now().AddDate(conf.SQLiteMaxAgeDays*-1, 0, 0)
+
+			// check if file is over size limit or if timestamp is older than SQLiteMaxAgeDays days
+			if timestamp.Before(maxAge) || sizeInMegabytes >= conf.SQLiteMaxSizeMB {
 				// move db file to loading dir
 				err = MoveFile(dbPath, conf.LoadingPath)
 				if err != nil {
 					return nil, "", fmt.Errorf("failed to move db file to loading dir: %v", err)
+				}
+			} else {
+				if timestamp.After(mostRecentTime) {
+					mostRecentTime = timestamp
+					mostRecentDBPath = dbPath
 				}
 			}
 		}
