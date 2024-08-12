@@ -58,7 +58,8 @@ func main() {
 		// Read config file each time api is called
 		config, err := app.ReadConfig(configDir)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(err)
+			return
 		}
 
 		// Read the contact from the request body

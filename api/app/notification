@@ -1,0 +1,20 @@
+package app
+
+import "github.com/go-gomail/gomail"
+
+func SendNotification(){
+	m := gomail.NewMessage()
+
+	m.SetHeader("From","timote.wb@gmail.com")
+	m.SetHeader("To","timote.wb@live.com")
+	m.SetAddressHeader("Cc", "timotiwb@gmail.com", "tim")
+	m.SetHeader("Subject", "Test from gomail")
+
+	m.SetBody("text/html","<h1>Hello from gomail</h1><p>This is an email from gomail.</p><p>See go.mod file</p>")
+	m.Attach("go.mod")
+
+	d := gomail.NewDialer("smtp.gmail.com", 587, "timote.wb@gmail.com", "mwjq hoxt lvjq fftn")
+	if err := d.DialAndSend(m); err != nil {
+		panic(err)
+	}
+}

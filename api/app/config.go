@@ -13,6 +13,19 @@ type Config struct {
 	AppPath string `json:"app_path"`
 	// JobList is a list of valid job names.
 	JobList []string `json:"job_list"`
+	// Notificaitons ettings
+	Notification Notification`json:"notification"`
+}
+type Notification struct {
+    To         string   `json:"to"`
+    From       string   `json:"from"`
+    SMTP       SMTP     `json:"smtp"`
+}
+type SMTP struct {
+    Host      string  `json:"host"`
+    Port      int     `json:"port"`
+    Username  string  `json:"username"`
+    Password  string  `json:"password"`
 }
 
 // ReadConfig reads and returns the application configuration from a JSON file.
