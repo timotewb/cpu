@@ -58,13 +58,14 @@ func main() {
 		// Read config file each time api is called
 		config, err := app.ReadConfig(configDir)
 		if err != nil {
-			log.Print(err)
+			log.Fatalf("from api(): error app.ReadConfig(): %v",err)
 			return
 		}
 
 		// Read the contact from the request body
 		var body Body
 		if err := c.ShouldBindJSON(&body); err != nil {
+			log.Printf("from api(): error c.ShouldBindJSON(): %v",err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -92,6 +93,7 @@ func main() {
 			cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 			output, err := cmd.CombinedOutput()
 			if err != nil {
+				log.Printf("from api(): error cmd.CombinedOutput(): %v",err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "cmd": cmd.String()})
 				return
 			}
@@ -99,6 +101,7 @@ func main() {
 			c.String(http.StatusOK, string(output))
 		} else {
 			// Write the output back to the response
+			log.Printf("from api(): error 'name' not found in job list(): %v",err)
 			c.JSON(http.StatusNotFound, gin.H{"error": "Name not found in job list", "job": body.Name})
 		}
 
