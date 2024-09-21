@@ -44,10 +44,10 @@ func main(){
 	}
 
 	// Execute the command
-	cmd := exec.Command("ssh", fmt.Sprintf("%q@%q", userName, ipAddress), "sudo", "shutdown", "now")
+	cmd := exec.Command("ssh", fmt.Sprintf("%s@%s", userName, ipAddress), "sudo", "shutdown", "now")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("from sol(): function exec.Command() failed: %v", err)
+		log.Fatalf("from sol(): function exec.Command() failed: %v", string(output))
 		return
 	}
 	log.Printf("from sol(): %v", output)
