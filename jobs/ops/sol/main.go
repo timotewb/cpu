@@ -51,5 +51,5 @@ func main(){
 		log.Fatalf("from sol(): function exec.Command() failed: %v", string(output))
 		return
 	}
-	log.Printf("from sol(): %v", output)
+	log.Printf("from sol(): target '%s' shutdown.", ipAddress)
 }
