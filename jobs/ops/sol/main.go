@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func main(){
@@ -46,7 +47,7 @@ func main(){
 	// Execute the command
 	cmd := exec.Command("ssh", fmt.Sprintf("%s@%s", userName, ipAddress), "sudo", "shutdown", "now")
 	output, err := cmd.CombinedOutput()
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "closed by remote host"){
 		log.Fatalf("from sol(): function exec.Command() failed: %v", string(output))
 		return
 	}
