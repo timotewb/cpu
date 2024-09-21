@@ -47,7 +47,7 @@ func main(){
 	// Execute the command
 	cmd := exec.Command("ssh", fmt.Sprintf("%s@%s", userName, ipAddress), "sudo", "shutdown", "now")
 	output, err := cmd.CombinedOutput()
-	if err != nil && !strings.Contains(err.Error(), "closed by remote host"){
+	if err != nil && !strings.Contains(string(output), "closed by remote host"){
 		log.Fatalf("from sol(): function exec.Command() failed: %v", string(output))
 		return
 	}
