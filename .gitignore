@@ -26,3 +26,5 @@ build/
 *.json
 data/
 tmp/
+.env
+.venv
