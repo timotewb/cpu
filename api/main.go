@@ -100,7 +100,7 @@ func main() {
 			}
 			// Write the output back to the response
 			log.Printf("from api(): %v", string(output))
-			c.JSON(http.StatusOK, gin.H{"message":string(output)})
+			c.JSON(http.StatusOK, string(output))
 		} else {
 			// Write the output back to the response
 			log.Printf("from api(): error 'name' not found in job list(): %v", err)
