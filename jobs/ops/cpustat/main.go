@@ -44,7 +44,6 @@ func main(){
 		return
 	}
 
-
 	if storageAccount == "" {
 		log.Fatalf("No Storage Account name provided.")
 	}
@@ -56,6 +55,10 @@ func main(){
 	}
 
 	app.EnvVariables(".env")
+
+	// for each server
+	// ping, if true stat
+
 	app.WriteToBlob(storageAccount, containerName, blobName, []byte("Maybe some Blob!\n"))
 
 }
