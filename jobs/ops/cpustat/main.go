@@ -1,71 +1,50 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"fmt"
 	"log"
-	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/timotewb/cpu/jobs/ops/cpustat/app"
 )
 
 func main(){
-	var storageAccount string
-	var containerName string
-	var blobName string
-	var help bool
-	// Define CLI flags in shrot and long form
-	flag.StringVar(&storageAccount, "s", "", "Storage Account name (shorthand)")
-	flag.StringVar(&storageAccount, "storage-accounts", "", "Storage Account name")
-	flag.StringVar(&containerName, "c", "", "Container name (shorthand)")
-	flag.StringVar(&containerName, "container", "", "Container name")
-	flag.StringVar(&blobName, "b", "", "Blob name (shorthand)")
-	flag.StringVar(&blobName, "blob", "", "Blob name")
-	flag.BoolVar(&help, "h", false, "Show usage instructions (shorthand)")
-	flag.BoolVar(&help, "help", false, "Show usage instructions")
-	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------------------------")
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n\n", os.Args[0])
-		fmt.Fprintln(os.Stderr, "Pass -s to specify the Storage Account name:")
-		fmt.Fprintln(os.Stderr, "  -s\t\tstring\n  --storage-account")
-		fmt.Fprintln(os.Stderr, "Pass -c to specify the Container name:")
-		fmt.Fprintln(os.Stderr, "  -c\t\tstring\n  --container")
-		fmt.Fprintln(os.Stderr, "Pass -b to specify the Blob name:")
-		fmt.Fprintln(os.Stderr, "  -b\t\tstring\n  --blob")
-		fmt.Fprintln(os.Stderr, "\n  -h\n  --help")
-		fmt.Fprintln(os.Stderr, "  \tShow usage instructions")
-		fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------------------------")
-	}
-	flag.Parse()
+	// var storageAccount string
+	// var containerName string
+	// var blobName string
 
-	// Print the Help docuemntation to the terminal if user passes help flag
-	if help {
-		flag.Usage()
-		return
+	// get path of code
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatalln("unable to get the current file path")
 	}
+	fullPath := filepath.Dir(file)
 
-	if storageAccount == "" {
-		log.Fatalf("No Storage Account name provided.")
-	}
-	if containerName == "" {
-		log.Fatalf("No Container name provided.")
-	}
-	if blobName == "" {
-		log.Fatalf("No Blob name provided.")
-	}
-
-	app.EnvVariables(".env")
-	conf, err := app.ReadJobConfig()
+	conf, err := app.ReadJobConfig(fullPath)
 	if err != nil {
 		log.Fatalf("from app.ReadJobConfig(): %s", err)
 	}
 
+	// read in blob data
+	app.EnvVariables(".env")
+	client := app.BlobClient(conf.Azure.StorageAccountName)
+	ctx := context.Background()
+	blob := app.ReadBlob(ctx, client, conf.Azure.ContainerName, conf.Azure.BlobName)
+
 	// for each server
-	for i in range length(conf.Servers){
-		fmt.Println(i)
+	for i := range conf.Servers{
+		fmt.Println(conf.Servers[i].IPAddress)
+		if app.Ping(conf.Servers[i].IPAddress){
+			fmt.Println("alive")
+		}
 	}
 	// ping, if true stat
 
-	// app.WriteToBlob(storageAccount, containerName, blobName, []byte("Maybe some Blob!\n"))
+	app.EnvVariables(".env")
+	client := app.BlobClient(conf.Azure.StorageAccountName)
+	ctx := context.Background()
+	app.WriteToBlob(ctx, client, conf.Azure.ContainerName, conf.Azure.BlobName, []byte("Maybe some Blob!\n"))
 
 }
