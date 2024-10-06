@@ -5,20 +5,23 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-)
 
-type JobConfig struct {
-	// List of urls to be processed
-	CamerasURL  string `json:"cameras_url"`
-	ChargersURL string `json:"chargers_url"`
-}
+	"github.com/timotewb/cpu/jobs/ops/cpustat/models"
+)
 
 // ReadJobConfig reads and returns the application configuration from a JSON file.
 // It returns an error if the file cannot be opened or if the JSON cannot be unmarshalled.
-func ReadJobConfig(configDir string) (JobConfig, error) {
-	var config JobConfig
+func ReadJobConfig() (models.JobConfig, error) {
+	var config models.JobConfig
 
-	configPath := filepath.Join(filepath.Join(configDir, "cpustat.json"))
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		fmt.Println("Unable to get the current file path")
+		return
+	}
+	fullPath := filepath.Dir(file)
+
+	configPath := filepath.join(fullPath, "config.json")
 	// Open the configuration file
 	file, err := os.Open(configPath)
 	if err != nil {

@@ -55,10 +55,17 @@ func main(){
 	}
 
 	app.EnvVariables(".env")
+	conf, err := app.ReadJobConfig()
+	if err != nil {
+		log.Fatalf("from app.ReadJobConfig(): %s", err)
+	}
 
 	// for each server
+	for i in range length(conf.Servers){
+		fmt.Println(i)
+	}
 	// ping, if true stat
 
-	app.WriteToBlob(storageAccount, containerName, blobName, []byte("Maybe some Blob!\n"))
+	// app.WriteToBlob(storageAccount, containerName, blobName, []byte("Maybe some Blob!\n"))
 
 }
