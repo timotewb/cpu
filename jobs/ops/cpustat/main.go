@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
@@ -20,11 +20,12 @@ import (
 func main(){
 
 	// get path of code
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Fatalln("unable to get the current file path")
+	exePath, err := os.Executable()
+	if err != nil {
+		fmt.Println("from os.Executable():", err)
+		return
 	}
-	fullPath := filepath.Dir(file)
+	fullPath := filepath.Dir(exePath)
 
 	// read config
 	conf, err := app.ReadJobConfig(fullPath)
