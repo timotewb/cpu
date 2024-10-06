@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-func EnvVariables(filename string) {
+func EnvVariables(fullPath string) {
     
     // Read the contents of the .env file
-    content, err := os.ReadFile(filepath.Join(os.Getenv("PWD"), filename))
+    content, err := os.ReadFile(filepath.Join(fullPath, ".env"))
     if err != nil {
         log.Fatalf("Error reading .env file: %v", err)
     }

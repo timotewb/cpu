@@ -79,7 +79,7 @@ func main(){
 
 	// write to blob
 	blobName := fmt.Sprintf("%v-latest.json", resp.Name)
-	app.EnvVariables(".env")
+	app.EnvVariables(fullPath)
 	app.WriteToBlob(conf.StorageAccountName, conf.ContainerName, blobName, data)
 
 }
