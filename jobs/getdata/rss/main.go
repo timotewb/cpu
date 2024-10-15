@@ -83,6 +83,7 @@ func main() {
 	// loop over each url
 	//----------------------------------------------------------------------------------------
 	for i := 0; i < len(jobConfig.URLs); i++ {
+		fmt.Println(jobConfig.URLs[i].URL)
 
 		if xmlBytes, err := helper.GetURLData(jobConfig.URLs[i].URL); err != nil {
 			log.Fatal("from main(): failed to get xml: ", err)
