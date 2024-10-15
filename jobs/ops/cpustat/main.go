@@ -36,7 +36,7 @@ func main(){
 	// get stats
 	var resp models.BlobType
 	// last update
-	now := time.Now()
+	now := time.Now().UTC()
     resp.LastUpdated = now.Format("2006-01-02 15:04:05")
 
 	// server details
