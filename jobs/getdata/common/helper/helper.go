@@ -186,6 +186,7 @@ func ParseDate(dateStr string) (string, error) {
         "2006-01-02T15:04:05Z",           // ISO 8601 format
         "Mon, 02 Jan 2006 15:04:05 -0700", // RFC 1123 format
         "Mon, 02 Jan 2006 15:04:05 MST",      // RFC3339 format
+        "Mon, 2 Jan 2006 15:04:05 MST",      // RFC3339 format
         // Add more formats as needed
     }
 
