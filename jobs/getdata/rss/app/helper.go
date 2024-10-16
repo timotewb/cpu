@@ -145,7 +145,6 @@ func ParseDate(dateStr string) (string, error) {
         "Mon, 02 Jan 2006 15:04:05 MST",      // RFC3339 format
         // Add more formats as needed
     }
-	fmt.Println(dateStr)
 
 	var parsedTime time.Time
 	var err error

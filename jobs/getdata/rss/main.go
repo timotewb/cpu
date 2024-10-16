@@ -119,7 +119,7 @@ func main() {
 					re := regexp.MustCompile(`(?s)<[^>]*>`)
 
 					// tidy pubDate
-					d, err := helper.ParseDate(s.PubDate)
+					d, err := app.ParseDate(s.PubDate)
 					if err != nil {
 						log.Fatal("from main(): failed to insert data from rss channel data: ", err)
 					} else {
@@ -164,7 +164,7 @@ func main() {
 					}
 
 					// tidy pubDate
-					d, err := helper.ParseDate(s.PubDate)
+					d, err := app.ParseDate(s.PubDate)
 					if err != nil {
 						log.Fatal("from main(): failed to insert data from rss channel data: ", err)
 					} else {
