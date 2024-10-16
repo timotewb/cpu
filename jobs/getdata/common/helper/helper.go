@@ -175,6 +175,10 @@ func copyFile(src, dst string) error {
 }
 
 func ParseDate(dateStr string) (string, error) {
+	// clean up
+	if strings.HasSuffix(dateStr, "UT"){
+		dateStr = dateStr+"C"
+	}
 	// Define the expected input formats
     formats := []string{
         "2006-01-02T15:04:05Z",           // ISO 8601 format
