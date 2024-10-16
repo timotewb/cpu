@@ -180,6 +180,7 @@ func ParseDate(dateStr string) (string, error) {
 		dateStr = dateStr+"C"
 	}
 	dateStr = strings.ReplaceAll(dateStr,"\x0a", "")
+	dateStr = strings.ReplaceAll(dateStr,"  ", "")
 	// Define the expected input formats
     formats := []string{
         "2006-01-02T15:04:05Z",           // ISO 8601 format
