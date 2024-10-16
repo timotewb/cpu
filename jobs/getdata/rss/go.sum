@@ -8,3 +8,5 @@ github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241016070327-98f2a2c63cbd h
 github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241016070327-98f2a2c63cbd/go.mod h1:Na/Hqdiv1heTFQ5SK4bfSs040uErzj4QPbLG8+4YNqM=
 github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241016070437-112cca88c76d h1:VbPDXdXSSx/fe5A3m1dAsL7DFegDoPlaXMDUa6jYfq8=
 github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241016070437-112cca88c76d/go.mod h1:Na/Hqdiv1heTFQ5SK4bfSs040uErzj4QPbLG8+4YNqM=
+github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241016071121-d1fb274287cc h1:AUJunj5vNxpZf9BSEQ5umWoq7hhE8X9AwINrSfdFoLs=
+github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241016071121-d1fb274287cc/go.mod h1:Na/Hqdiv1heTFQ5SK4bfSs040uErzj4QPbLG8+4YNqM=
