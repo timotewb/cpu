@@ -11,26 +11,19 @@ import (
 
 // ReadJobConfig reads and returns the application configuration from a JSON file.
 // It returns an error if the file cannot be opened or if the JSON cannot be unmarshalled.
-func ReadJobConfig() (models.JobConfig, error) {
-	var config models.JobConfig
+func ReadJobConfig(fullPath string) (models.JobConfigType, error) {
+	var config models.JobConfigType
 
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		fmt.Println("Unable to get the current file path")
-		return
-	}
-	fullPath := filepath.Dir(file)
-
-	configPath := filepath.join(fullPath, "config.json")
+	configPath := filepath.Join(fullPath, "config.json")
 	// Open the configuration file
-	file, err := os.Open(configPath)
+	fileObj, err := os.Open(configPath)
 	if err != nil {
 		return config, err
 	}
-	defer file.Close()
+	defer fileObj.Close()
 
 	// Read the file content
-	content, err := io.ReadAll(file)
+	content, err := io.ReadAll(fileObj)
 	if err != nil {
 		return config, err
 	}

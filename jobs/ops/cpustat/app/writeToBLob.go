@@ -10,20 +10,21 @@ import (
 )
 
 func WriteToBlob(storageAccount, containerName, blobName string, blobData []byte){
-	urlSA :=  fmt.Sprintf("https://%s.blob.core.windows.net/", storageAccount)
-	ctx := context.Background()
+
+	url :=  fmt.Sprintf("https://%s.blob.core.windows.net/", storageAccount)
 
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	client, err := azblob.NewClient(urlSA, credential, nil)
+	client, err := azblob.NewClient(url, credential, nil)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	
 
-	_, err = client.UploadBuffer(ctx, containerName, blobName, blobData, &azblob.UploadBufferOptions{})
+	_, err = client.UploadBuffer(context.Background(), containerName, blobName, blobData, &azblob.UploadBufferOptions{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}

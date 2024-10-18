@@ -1,71 +1,86 @@
 package main
 
 import (
-	"flag"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/host"
+	"github.com/shirou/gopsutil/load"
+	"github.com/shirou/gopsutil/mem"
 	"github.com/timotewb/cpu/jobs/ops/cpustat/app"
+	"github.com/timotewb/cpu/jobs/ops/cpustat/models"
 )
 
 func main(){
-	var storageAccount string
-	var containerName string
-	var blobName string
-	var help bool
-	// Define CLI flags in shrot and long form
-	flag.StringVar(&storageAccount, "s", "", "Storage Account name (shorthand)")
-	flag.StringVar(&storageAccount, "storage-accounts", "", "Storage Account name")
-	flag.StringVar(&containerName, "c", "", "Container name (shorthand)")
-	flag.StringVar(&containerName, "container", "", "Container name")
-	flag.StringVar(&blobName, "b", "", "Blob name (shorthand)")
-	flag.StringVar(&blobName, "blob", "", "Blob name")
-	flag.BoolVar(&help, "h", false, "Show usage instructions (shorthand)")
-	flag.BoolVar(&help, "help", false, "Show usage instructions")
-	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------------------------")
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n\n", os.Args[0])
-		fmt.Fprintln(os.Stderr, "Pass -s to specify the Storage Account name:")
-		fmt.Fprintln(os.Stderr, "  -s\t\tstring\n  --storage-account")
-		fmt.Fprintln(os.Stderr, "Pass -c to specify the Container name:")
-		fmt.Fprintln(os.Stderr, "  -c\t\tstring\n  --container")
-		fmt.Fprintln(os.Stderr, "Pass -b to specify the Blob name:")
-		fmt.Fprintln(os.Stderr, "  -b\t\tstring\n  --blob")
-		fmt.Fprintln(os.Stderr, "\n  -h\n  --help")
-		fmt.Fprintln(os.Stderr, "  \tShow usage instructions")
-		fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------------------------")
-	}
-	flag.Parse()
 
-	// Print the Help docuemntation to the terminal if user passes help flag
-	if help {
-		flag.Usage()
+	// get path of code
+	exePath, err := os.Executable()
+	if err != nil {
+		fmt.Println("from os.Executable():", err)
 		return
 	}
+	fullPath := filepath.Dir(exePath)
 
-	if storageAccount == "" {
-		log.Fatalf("No Storage Account name provided.")
-	}
-	if containerName == "" {
-		log.Fatalf("No Container name provided.")
-	}
-	if blobName == "" {
-		log.Fatalf("No Blob name provided.")
-	}
-
-	app.EnvVariables(".env")
-	conf, err := app.ReadJobConfig()
+	// read config
+	conf, err := app.ReadJobConfig(fullPath)
 	if err != nil {
 		log.Fatalf("from app.ReadJobConfig(): %s", err)
 	}
 
-	// for each server
-	for i in range length(conf.Servers){
-		fmt.Println(i)
-	}
-	// ping, if true stat
+	// get stats
+	var resp models.BlobType
+	// last update
+	now := time.Now().UTC()
+    resp.LastUpdated = now.Format("2006-01-02 15:04:05")
 
-	// app.WriteToBlob(storageAccount, containerName, blobName, []byte("Maybe some Blob!\n"))
+	// server details
+	h, err := host.Info()
+	if err != nil {
+		log.Fatalf("from host.Info(): %s", err)
+	}
+	resp.Platform = fmt.Sprintf("%v, %v, %v", h.Platform, h.PlatformFamily, h.PlatformVersion)
+	resp.UpTime = app.Uptime(h.Uptime)
+    resp.Name = strings.ToLower(h.Hostname)
+	resp.RunningProcs = int64(h.Procs)
+
+	// resources
+	v, err := mem.VirtualMemory()
+	if err != nil {
+		log.Fatalf("from mem.VirtualMemory(): %s", err)
+	}
+	resp.MemoryUsedPct = v.UsedPercent
+
+	c, err := cpu.Info()
+	if err != nil {
+		log.Fatalf("from cpu.Info(): %s", err)
+	}
+	resp.CPUCoreCount = 0
+	for i := range c {
+		resp.CPUCoreCount = resp.CPUCoreCount + int64(c[i].Cores)
+		resp.CPUModel = c[i].ModelName
+	}
+	
+	l, err := load.Avg()
+	if err != nil {
+		log.Fatalf("from load.Avg(): %s", err)
+	}
+	resp.LoadAverage = fmt.Sprintf("%v, %v, %v", l.Load1, l.Load5, l.Load15)
+
+	// prepare for output
+	data, err := json.MarshalIndent(resp, "", "  ")
+	if err != nil {
+		log.Fatalf("from json.MarshalIndent(): %v", err)
+	}
+
+	// write to blob
+	blobName := fmt.Sprintf("%v-latest.json", resp.Name)
+	app.EnvVariables(fullPath)
+	app.WriteToBlob(conf.StorageAccountName, conf.ContainerName, blobName, data)
 
 }

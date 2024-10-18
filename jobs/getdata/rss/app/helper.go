@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -138,12 +139,17 @@ func MoveFile(srcFilePath, destDirPath string) error {
 }
 
 func ParseDate(dateStr string) (string, error) {
-	// Define the expected input formats
-	formats := []string{
-		"2006-01-02T15:04:05Z",            // ISO 8601 format
-		"Mon, 02 Jan 2006 15:04:05 -0700", // RFC 1123 format
-		// Add more formats as needed
+	// clean up
+	if strings.HasSuffix(dateStr, "UT"){
+		dateStr = dateStr+"C"
 	}
+	// Define the expected input formats
+    formats := []string{
+        "2006-01-02T15:04:05Z",           // ISO 8601 format
+        "Mon, 02 Jan 2006 15:04:05 -0700", // RFC 1123 format
+        "Mon, 02 Jan 2006 15:04:05 MST",      // RFC3339 format
+        // Add more formats as needed
+    }
 
 	var parsedTime time.Time
 	var err error

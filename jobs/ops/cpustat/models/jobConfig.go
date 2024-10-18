@@ -1,11 +1,7 @@
 package models
 
-type JobConfig struct {
-	Servers []ServerType `json:"servers"`
-}
 
-type ServerType {
-	Name  string `json:"name"`
-	IPAddress  string `json:"ip_address"`
-
+type JobConfigType struct {
+	StorageAccountName  string `json:"storage_account_name"`
+	ContainerName  string `json:"container_name"`
 }
