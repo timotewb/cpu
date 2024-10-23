@@ -15,7 +15,7 @@ import (
 func GetJobListings(allConfig config.AllConfig, jobConfig m.JobConfig){
 
 	// get sqlite db
-	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "alphavantage")
+	db, dbPath, err := helper.GetOrCreateSQLiteDB(allConfig, "seek")
 	if err != nil {
 		log.Fatalf("from TimeSeriesDaily(): function GetOrCreateSQLiteDB() failed: %v", err)
 	}
