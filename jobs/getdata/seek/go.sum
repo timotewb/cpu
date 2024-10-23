@@ -1,0 +1,4 @@
+github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
+github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
+github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241020060932-44656bd1b40b h1:z+EEefpkwu0oow2K87YCoMXUR9iTLxSW8wJZ+AoxGIQ=
+github.com/timotewb/cpu/jobs/getdata/common v0.0.0-20241020060932-44656bd1b40b/go.mod h1:Na/Hqdiv1heTFQ5SK4bfSs040uErzj4QPbLG8+4YNqM=
