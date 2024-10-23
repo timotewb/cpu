@@ -51,6 +51,6 @@ func main(){
 		return
 	}
 
-	app.GetData(allConfig, jobConfig)
+	app.GetJobListings(allConfig, jobConfig)
 
 }
