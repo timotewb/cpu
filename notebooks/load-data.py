@@ -7,6 +7,7 @@ import sqlite3
 import pandas as pd
 import psycopg2
 import psycopg2.extras
+import time
 
 #----------------------------------------------------------------------------------------
 # load environment variables
@@ -47,12 +48,33 @@ def load_db_file(filename:str):
     # Fetch all rows returned by the query
     tables = cursor.fetchall()
 
+    # hold table names
+    table_names:list = []
+    for table in tables:
+        table_names.append(table[0])
+
     # Print the table names
     for table in tables:
-        sql: str = table[1].replace(f"CREATE TABLE {table[0]} (",f"CREATE TABLE staging.{table[0]} (")
-        sql = sql.replace("id INTEGER PRIMARY KEY AUTOINCREMENT,","id SERIAL PRIMARY KEY,")
-        print(sql)
-        psql_cur.execute(sql)
+        if table[0] not in ['sqlite_sequence']:
+            #----------------------------------------------------------------------------------------
+            # staging
+            #----------------------------------------------------------------------------------------
+            # drop table if exists
+            sql: str = f"drop table if exists staging.{table[0]} cascade"
+            psql_cur.execute(sql)
+
+            # modify create table statement
+            sql = table[1].replace(f"CREATE TABLE {table[0]} (", f"CREATE TABLE staging.{table[0]} (")
+            sql = sql.replace("id INTEGER PRIMARY KEY AUTOINCREMENT,", "id SERIAL PRIMARY KEY,")
+
+            for tn in table_names:
+                sql = sql.replace(f"REFERENCES {tn}(", f"REFERENCES staging.{tn}(")
+
+            psql_cur.execute(sql)
+            #----------------------------------------------------------------------------------------
+            # bronze
+            #----------------------------------------------------------------------------------------
+            time.sleep(1)
 
 
 
