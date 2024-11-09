@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gocarina/gocsv"
 	m "github.com/timotewb/cpu/jobs/getdata/alphavantage/models"
@@ -41,6 +42,7 @@ func TimeSeriesDaily(allConfig config.AllConfig, jobConfig m.JobConfig){
 	var url string
 	for _, s := range jobConfig.Symbols{
 		url = fmt.Sprintf("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=%s&outputsize=full&apikey=%s&datatype=csv", s, jobConfig.APIKey)
+		fmt.Println(url)
 		if csvBytes, err := helper.GetURLData(url); err != nil {
 			log.Fatalf("from TimeSeriesDaily(): failed to get json: %v\n", err)
 		} else {
@@ -79,5 +81,6 @@ func TimeSeriesDaily(allConfig config.AllConfig, jobConfig m.JobConfig){
 				return
 			}
 		}
+	time.Sleep(1 * time.Second)
 	}
 }

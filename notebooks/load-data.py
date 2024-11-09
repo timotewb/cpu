@@ -88,6 +88,7 @@ def load_db_file(filename:str):
             logger.info(f"  creating staging")
             pg_cur.execute(sql)
 
+            logger.info(f"  copying")
             copy_data_to_staging(sql_cu, pg_cur, table[0])
             #----------------------------------------------------------------------------------------
             # bronze
@@ -118,13 +119,24 @@ def table_exists(cursor, table_name) -> bool:
 def copy_data_to_staging(sql_cu, pg_cur, table_name):
 
     sql_cu.execute(f"PRAGMA table_info({table_name})")
-    columns = [row[1] for row in sql_cu.fetchall() if row[1] != 'id']
-    print(list_to_string(columns))
+    columns_list = [row[1] for row in sql_cu.fetchall() if row[1] != 'id']
+    columns_str = list_to_string(columns_list)
+    s_str = generate_s(len(columns_list))
 
     sql_cu.execute(f"SELECT * FROM {table_name}")
     rows = sql_cu.fetchall()
 
+    for r in rows:
+        sql:str = f"insert into staging.{table_name} ({columns_str}) values ({s_str})"
+        pg_cur.execute(sql, r[1:])
+
 def list_to_string(l):
-    return ','.join([f"'{item}'" for item in l])
+    return ','.join([f"{item}" for item in l])
+
+def generate_s(c):
+    r:list = []
+    for i in range(c):
+        r.append("%s")
+    return ','.join([f"{item}" for item in r])
 
 load_db_file("journeys_nzta_20240907100303.db")
